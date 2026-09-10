@@ -879,7 +879,13 @@
         spawnTarget();
         return;
       }
-      const lane = Math.random() < .5 ? 0 : 2;
+      // Keep existing obstacles moving; wait for a completely clear house lane.
+      // Reserving the full lane also prevents the faster house catching an obstacle.
+      const safeLanes = [0, 2].filter(lane =>
+        !state.night.obstacles.some(obstacle => obstacle.lane === lane) &&
+        !state.night.departingTargets.some(house => house.lane === lane));
+      if (!safeLanes.length) return;
+      const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
       state.night.mode = "delivery";
       state.night.deliveryElapsed = 0;
       const product = PRODUCTS[order.productId];
@@ -896,7 +902,9 @@
     }
 
     function spawnObstacle() {
-      const lanes = [0, 1, 2];
+      const houses = [...state.night.departingTargets, state.night.currentTarget].filter(Boolean);
+      const lanes = [0, 1, 2].filter(lane => !houses.some(house => house.lane === lane));
+      if (!lanes.length) return;
       const lane = lanes[Math.floor(Math.random() * lanes.length)];
       const element = document.createElement("div");
       element.className = "road-object obstacle";
