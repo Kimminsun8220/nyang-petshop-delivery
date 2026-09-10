@@ -135,3 +135,19 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .timing-panel #timingNeedle,.timing-panel.delivery-active #timingNeedle{left:0;width:100%;background:none;box-shadow:none;will-change:transform}
 #timingNeedle::after{content:'';position:absolute;left:0;top:0;width:6px;height:100%;background:#fffaf0;box-shadow:0 0 5px white}
 @media(prefers-reduced-motion:reduce){.van::before,.van.hit::before{transform:none;animation:none}}
+
+/* Night settlement: return to the closed shop, not the daytime interior. */
+#resultScreen{background:linear-gradient(#17244118,#18243b30),url('assets/petshop-closed-v11.png') center/cover fixed;color:#684b38}
+#resultScreen.active{padding:24px 16px;min-height:100svh}
+#resultScreen .result-card{width:min(610px,100%);padding:26px 28px 20px;background:#fff7e9f5;border:3px solid #efb08b;box-shadow:inset 0 0 0 4px #ffecd3,0 18px 55px #10203d66;backdrop-filter:blur(3px)}
+.shop-closed-label{display:inline-block;padding:7px 14px;border:1px solid #d6b28d;border-radius:8px;background:#f7e7cf;color:#795237;font-size:14px;font-weight:800;letter-spacing:.04em}
+#resultScreen .result-icon{font-size:52px;margin-top:12px}
+#resultScreen h2{font-size:clamp(28px,4vw,40px);margin:8px 0 12px;color:#694834}
+#resultScreen .result-summary{grid-template-columns:repeat(3,minmax(0,1fr));margin:18px 0;gap:8px}
+#resultScreen .result-box{background:#f8e8ce;border:1px solid #eed5b5;padding:12px 5px}
+#resultScreen .result-box small{font-size:14px;color:#80634d}
+#resultScreen .result-box:last-child strong{color:#b74e42}
+#resultScreen .result-list{font-size:15px;line-height:1.7;color:#775e4b}
+#resultScreen .primary-btn{padding:14px 24px;font-size:20px}
+.closing-note{margin:20px 0 0;font-size:14px;color:#94775e}
+@media(max-width:600px){#resultScreen{background-attachment:scroll;background-position:30% center}#resultScreen .result-card{padding:20px 16px}#resultScreen .result-icon{font-size:40px}#resultScreen .result-box strong{font-size:20px}#resultScreen .primary-btn{width:100%;font-size:18px}}
