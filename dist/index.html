@@ -304,6 +304,12 @@
     .timing-track{position:relative;height:10px;background:#18162e;border-radius:8px;margin-top:8px;overflow:hidden}
     .timing-zone{position:absolute;left:38%;width:32%;height:100%;background:#76e0aa}
     #timingNeedle{position:absolute;left:0;top:0;width:4px;height:100%;background:white;box-shadow:0 0 6px white}
+    .timing-panel.delivery-active{position:fixed;z-index:30;left:50%;top:50%;transform:translate(-50%,-50%);width:min(86vw,360px);margin:0;padding:18px 20px;background:rgba(27,22,57,.94);border:2px solid #c6b2ff;box-shadow:0 12px 42px #08051b99;pointer-events:none;font-size:clamp(18px,2.4vw,24px);line-height:1.45}
+    .timing-panel.delivery-active .timing-track{height:26px;margin-top:14px;border:2px solid #9c8bc0}
+    .timing-panel.delivery-active #timingNeedle{width:6px}
+    .timing-panel.delivery-active::after{content:'초록 구간에 흰 막대가 오면 SPACE / 📦 던지기';display:block;font-size:14px;margin-top:10px;color:#eee5ff}
+    .timing-panel.delivery-active.ready{border-color:#80ffb6;box-shadow:0 0 28px #62f3a76b;background:rgba(18,64,47,.96)}
+    .delivery-gate{transform:translateY(var(--y)) scale(var(--approach-scale,1));transform-origin:center center}
     .parcel-flight{position:absolute;font-size:34px;z-index:30;pointer-events:none}
     .road{height:min(60vh,480px);min-height:280px}.delivery-gate{z-index:12}
     @media(min-width:1000px){.customer-grid{gap:10px}.day-grid{gap:12px}.craft-empty{max-height:100px}.craft-empty span{font-size:34px!important}.material-card{display:grid;grid-template-columns:32px 1fr;align-items:center;gap:2px}.material-icon{grid-row:1/3}.material-meta{margin:0}.buy-btn{grid-column:1/-1}.customer-head{float:left;margin-right:12px}.speech{margin-top:0}.order-row{clear:both}.customer-card{padding:8px 12px}}
@@ -783,6 +789,7 @@
       document.getElementById("timingText").textContent = "🏁 장애물을 피해 달려요 · 집에 도착하면 SPACE!";
       document.getElementById("throwButton").classList.remove("ready");
       document.getElementById("timingNeedle").style.left = "0%";
+      document.querySelector(".timing-panel").classList.remove("delivery-active", "ready");
       animationId = requestAnimationFrame(updateNight);
     }
 
@@ -816,8 +823,10 @@
       element.style.setProperty("--lane", lane);
       element.innerHTML = `<span class="gate-cat">🏠</span>${order.customerName}네<br>${product.icon} 배송지`;
       document.getElementById("nightObjects").appendChild(element);
-      const y = document.getElementById("road").clientHeight * .42;
+      const y = -90;
       element.style.setProperty("--y", `${y}px`);
+      element.style.setProperty("--approach-scale", ".55");
+      document.querySelector(".timing-panel").classList.add("delivery-active");
       state.night.currentTarget = { orderId, lane, y, element };
       document.getElementById("timingText").textContent = `🐱 ${order.customerName}네 도착! 초록 구간을 기다려요`;
     }
@@ -855,6 +864,10 @@
         state.night.deliveryElapsed += dt;
         const progress = state.night.deliveryElapsed / 2.4;
         const ready = progress >= .38 && progress <= .70;
+        target.y = -90 + (road.clientHeight + 180) * Math.min(1, progress);
+        target.element.style.setProperty("--y", `${target.y}px`);
+        target.element.style.setProperty("--approach-scale", `${.55 + .65 * Math.min(1, progress)}`);
+        document.querySelector(".timing-panel").classList.toggle("ready", ready);
         document.getElementById("timingNeedle").style.left = `${Math.min(99, progress * 100)}%`;
         document.getElementById("throwButton").classList.toggle("ready", ready);
         const customer = getOrder(target.orderId);
@@ -919,6 +932,7 @@
       state.night.raceLeft = 4.2;
       state.night.obstacleCooldown = .8;
       document.getElementById("throwButton").classList.remove("ready");
+      document.querySelector(".timing-panel").classList.remove("delivery-active", "ready");
       document.getElementById("timingText").textContent = "🏁 다시 출발! 다음 집까지 장애물을 피하세요";
       state.night.currentTargetIndex += 1;
       updateNightHud();
