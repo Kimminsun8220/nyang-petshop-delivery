@@ -812,7 +812,9 @@
 
     function moveVan(direction) {
       if (!state || state.phase !== "night" || !state.night || state.night.ending) return;
+      const previousLane = state.night.lane;
       state.night.lane = Math.max(0, Math.min(2, state.night.lane + direction));
+      if (previousLane !== state.night.lane) window.gameSound?.sfx("move");
       document.getElementById("van").style.setProperty("--lane", state.night.lane);
       updateDeliveryPrompt();
     }
@@ -969,6 +971,7 @@
       const target = state.night.currentTarget;
       if (!target || state.night.mode !== "delivery") return;
       if (state.night.lane !== target.lane) return;
+      window.gameSound?.sfx("throw");
       const progress = state.night.deliveryElapsed / 2.4;
       const success = progress >= .38 && progress <= .70;
       if (success) {
@@ -1195,5 +1198,7 @@
 
     state = freshState();
   </script>
+  <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="음악과 효과음 끄기">🔊 소리 켜짐</button>
+  <script src="petshop-audio-v12.js"></script>
 </body>
 </html>
