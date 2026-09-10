@@ -797,6 +797,23 @@
       if (!state || state.phase !== "night" || !state.night || state.night.ending) return;
       state.night.lane = Math.max(0, Math.min(2, state.night.lane + direction));
       document.getElementById("van").style.setProperty("--lane", state.night.lane);
+      updateDeliveryPrompt();
+    }
+
+    function updateDeliveryPrompt() {
+      const target = state.night.currentTarget;
+      if (!target || state.night.mode !== "delivery") return;
+      const sameLane = state.night.lane === target.lane;
+      const progress = state.night.deliveryElapsed / 2.4;
+      const ready = sameLane && progress >= .38 && progress <= .70;
+      const panel = document.querySelector(".timing-panel");
+      panel.classList.toggle("delivery-active", sameLane);
+      panel.classList.toggle("ready", ready);
+      document.getElementById("throwButton").classList.toggle("ready", ready);
+      const customer = getOrder(target.orderId);
+      document.getElementById("timingText").textContent = !sameLane
+        ? `${target.lane === 0 ? '◀ 왼쪽' : '오른쪽 ▶'} 집이 있는 차선으로 이동하세요`
+        : ready ? "📦 지금 던져! SPACE / 던지기" : `🐱 ${customer.customerName}네 도착! 초록 구간에서 던져요`;
     }
 
     function spawnTarget() {
@@ -826,9 +843,8 @@
       const y = -90;
       element.style.setProperty("--y", `${y}px`);
       element.style.setProperty("--approach-scale", ".55");
-      document.querySelector(".timing-panel").classList.add("delivery-active");
       state.night.currentTarget = { orderId, lane, y, element };
-      document.getElementById("timingText").textContent = `🐱 ${order.customerName}네 도착! 초록 구간을 기다려요`;
+      updateDeliveryPrompt();
     }
 
     function spawnObstacle() {
@@ -863,15 +879,11 @@
       if (target && state.night.mode === "delivery") {
         state.night.deliveryElapsed += dt;
         const progress = state.night.deliveryElapsed / 2.4;
-        const ready = progress >= .38 && progress <= .70;
         target.y = -90 + (road.clientHeight + 180) * Math.min(1, progress);
         target.element.style.setProperty("--y", `${target.y}px`);
         target.element.style.setProperty("--approach-scale", `${.55 + .65 * Math.min(1, progress)}`);
-        document.querySelector(".timing-panel").classList.toggle("ready", ready);
         document.getElementById("timingNeedle").style.left = `${Math.min(99, progress * 100)}%`;
-        document.getElementById("throwButton").classList.toggle("ready", ready);
-        const customer = getOrder(target.orderId);
-        document.getElementById("timingText").textContent = ready ? "📦 지금 던져! SPACE / 던지기" : `🐱 ${customer.customerName}네 도착! 초록 구간에서 던져요`;
+        updateDeliveryPrompt();
         if (progress >= 1) resolveTarget(target, false);
       }
 
@@ -896,6 +908,7 @@
       if (!state || state.phase !== "night" || state.night.ending) return;
       const target = state.night.currentTarget;
       if (!target || state.night.mode !== "delivery") return;
+      if (state.night.lane !== target.lane) return;
       const progress = state.night.deliveryElapsed / 2.4;
       const success = progress >= .38 && progress <= .70;
       if (success) {
