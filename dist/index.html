@@ -833,8 +833,6 @@
       const lane = Math.random() < .5 ? 0 : 2;
       state.night.mode = "delivery";
       state.night.deliveryElapsed = 0;
-      state.night.obstacles.forEach(removeRoadObject);
-      state.night.obstacles = [];
       const product = PRODUCTS[order.productId];
       const element = document.createElement("div");
       element.className = "road-object delivery-gate";
