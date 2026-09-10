@@ -392,6 +392,7 @@
     </section>
 
     <section id="nightScreen" class="screen" aria-label="밤 배송 화면">
+      <div id="nightScenery" class="night-scenery" aria-hidden="true"></div>
       <div class="night-shell">
         <div class="night-top">
           <div class="night-stat"><small>남은 시간</small><strong id="timeValue">25.0초</strong></div>
@@ -408,7 +409,7 @@
           <div id="van" class="van" style="--lane:1" aria-label="배송 차량">🚐</div>
           <div id="nightMessage" class="night-message"></div>
         </div>
-        <div class="timing-panel"><span id="timingText">🏁 장애물을 피해 달려요 · 집에 도착하면 SPACE!</span><div class="timing-track"><span class="timing-zone"></span><span id="timingNeedle"></span></div></div>
+        <div class="timing-slot"><div class="timing-panel"><span id="timingText">🏁 장애물을 피해 달려요 · 집에 도착하면 SPACE!</span><div class="timing-track"><span class="timing-zone"></span><span id="timingNeedle"></span></div></div></div>
         <div class="mobile-controls" aria-label="차량 이동 버튼">
           <button class="drive-btn" type="button" aria-label="왼쪽 차선으로 이동" onclick="moveVan(-1)">◀ 왼쪽</button>
           <button id="throwButton" class="drive-btn" type="button" onclick="throwParcel()">📦 던지기 · SPACE</button>
@@ -468,6 +469,7 @@
     let state;
     let toastTimer = null;
     let animationId = null;
+    let nightView = null;
     let nightTimers = [];
 
     function freshState() {
@@ -487,7 +489,7 @@
 
     function setScreen(id) {
       SCREEN_IDS.forEach(screenId => document.getElementById(screenId).classList.toggle("active", screenId === id));
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: id === "nightScreen" ? "instant" : "smooth" });
     }
 
     function startGame() {
@@ -766,6 +768,10 @@
         delivered: 0,
         earnings: 0,
         currentTarget: null,
+        departingTargets: [],
+        distance: 0,
+        visualLane: 1,
+        promptKey: "",
         obstacles: [],
         mode: "racing",
         raceLeft: 3.8,
@@ -782,6 +788,14 @@
       document.getElementById("van").classList.remove("hit");
       updateNightHud();
       setScreen("nightScreen");
+      nightView = {
+        road: document.getElementById("road"), van: document.getElementById("van"),
+        scenery: document.getElementById("nightScenery"), panel: document.querySelector(".timing-panel"),
+        needle: document.getElementById("timingNeedle"), button: document.getElementById("throwButton"),
+        text: document.getElementById("timingText"), reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches
+      };
+      measureNightRoad();
+      renderNightMotion(0);
       if (!loaded.length) {
         showNightMessage("실은 상품이 없어요… 오늘 주문은 미배송 처리돼요");
         nightTimers.push(setTimeout(endNight, 1400));
@@ -789,7 +803,7 @@
       }
       document.getElementById("timingText").textContent = "🏁 장애물을 피해 달려요 · 집에 도착하면 SPACE!";
       document.getElementById("throwButton").classList.remove("ready");
-      document.getElementById("timingNeedle").style.left = "0%";
+      document.getElementById("timingNeedle").style.transform = "translate3d(0,0,0)";
       document.querySelector(".timing-panel").classList.remove("delivery-active", "ready");
       animationId = requestAnimationFrame(updateNight);
     }
@@ -801,12 +815,47 @@
       updateDeliveryPrompt();
     }
 
+    function measureNightRoad() {
+      if (!nightView) return;
+      nightView.width = nightView.road.clientWidth;
+      nightView.height = nightView.road.clientHeight;
+    }
+
+    function renderNightMotion(dt) {
+      const n = state.night, v = nightView;
+      n.distance += 195 * dt;
+      n.visualLane += (n.lane - n.visualLane) * (1 - Math.exp(-18 * dt));
+      v.van.style.setProperty("--van-x", `${n.visualLane * v.width / 3}px`);
+      v.road.style.setProperty("--road-scroll", `${n.distance % 88}px`);
+      const bob = v.reducedMotion ? 0 : Math.sin(n.distance / 15) * 1.3;
+      const lean = v.reducedMotion ? 0 : (n.lane - n.visualLane) * 9;
+      v.van.style.setProperty("--body-bob", `${bob}px`);
+      v.van.style.setProperty("--body-lean", `${lean}deg`);
+      const drift = v.reducedMotion ? 0 : (1 - n.visualLane) * 9;
+      const approach = v.reducedMotion ? 1.02 : 1.02 + Math.min(n.distance / 80000, .07);
+      v.scenery.style.transform = `translate3d(${drift}px,${v.reducedMotion ? 0 : Math.min(n.distance / 160, 36)}px,0) scale(${approach})`;
+    }
+
+    function advanceDepartingHouses(dt) {
+      const n = state.night;
+      n.departingTargets.forEach(target => {
+        target.y += (nightView.height + 180) / 2.4 * dt;
+        target.element.style.setProperty("--y", `${target.y}px`);
+        target.element.style.setProperty("--approach-scale", `${.55 + .65 * (target.y + 90) / (nightView.height + 180)}`);
+      });
+      n.departingTargets.filter(target => target.y > nightView.height + 100).forEach(removeRoadObject);
+      n.departingTargets = n.departingTargets.filter(target => target.y <= nightView.height + 100);
+    }
+
     function updateDeliveryPrompt() {
       const target = state.night.currentTarget;
       if (!target || state.night.mode !== "delivery") return;
       const sameLane = state.night.lane === target.lane;
       const progress = state.night.deliveryElapsed / 2.4;
       const ready = sameLane && progress >= .38 && progress <= .70;
+      const promptKey = `${target.orderId}:${sameLane}:${ready}`;
+      if (state.night.promptKey === promptKey) return;
+      state.night.promptKey = promptKey;
       const panel = document.querySelector(".timing-panel");
       panel.classList.toggle("delivery-active", sameLane);
       panel.classList.toggle("ready", ready);
@@ -858,11 +907,13 @@
     }
 
     function updateNight(now) {
-      if (state.phase !== "night" || state.night.ending) return;
+      if (state.phase !== "night") return;
       const dt = Math.min((now - state.night.lastFrame) / 1000, .05);
       state.night.lastFrame = now;
-      state.night.timeLeft = Math.max(0, state.night.timeLeft - dt);
-      if (state.night.mode === "racing") {
+      renderNightMotion(dt);
+      advanceDepartingHouses(dt);
+      if (!state.night.ending) state.night.timeLeft = Math.max(0, state.night.timeLeft - dt);
+      if (!state.night.ending && state.night.mode === "racing") {
         state.night.raceLeft -= dt;
         state.night.obstacleCooldown -= dt;
         if (state.night.raceLeft <= 0) spawnTarget();
@@ -871,17 +922,17 @@
           state.night.obstacleCooldown = .85 + Math.random() * .2;
         }
       }
-      const road = document.getElementById("road");
-      const vehicleY = road.clientHeight - 105;
+      const roadHeight = nightView.height;
+      const vehicleY = roadHeight - 105;
 
       const target = state.night.currentTarget;
       if (target && state.night.mode === "delivery") {
         state.night.deliveryElapsed += dt;
         const progress = state.night.deliveryElapsed / 2.4;
-        target.y = -90 + (road.clientHeight + 180) * Math.min(1, progress);
+        target.y = -90 + (roadHeight + 180) * Math.min(1, progress);
         target.element.style.setProperty("--y", `${target.y}px`);
         target.element.style.setProperty("--approach-scale", `${.55 + .65 * Math.min(1, progress)}`);
-        document.getElementById("timingNeedle").style.left = `${Math.min(99, progress * 100)}%`;
+        nightView.needle.style.transform = `translate3d(${Math.min(99, progress * 100)}%,0,0)`;
         updateDeliveryPrompt();
         if (progress >= 1) resolveTarget(target, false);
       }
@@ -890,13 +941,13 @@
         obstacle.y += obstacle.speed * dt;
         obstacle.element.style.setProperty("--y", `${obstacle.y}px`);
         const closeToVan = obstacle.y > vehicleY - 38 && obstacle.y < vehicleY + 38;
-        if (!obstacle.hit && closeToVan && obstacle.lane === state.night.lane) hitObstacle(obstacle, now);
+        if (!state.night.ending && !obstacle.hit && closeToVan && obstacle.lane === state.night.lane) hitObstacle(obstacle, now);
       });
-      state.night.obstacles.filter(item => item.y > road.clientHeight + 80).forEach(removeRoadObject);
-      state.night.obstacles = state.night.obstacles.filter(item => item.y <= road.clientHeight + 80);
+      state.night.obstacles.filter(item => item.y > roadHeight + 80).forEach(removeRoadObject);
+      state.night.obstacles = state.night.obstacles.filter(item => item.y <= roadHeight + 80);
 
       updateNightHud();
-      if (state.night.timeLeft <= 0) {
+      if (!state.night.ending && state.night.timeLeft <= 0) {
         endNight();
         return;
       }
@@ -917,7 +968,7 @@
         parcel.className = "parcel-flight"; parcel.textContent = "📦";
         const x = from.left - bounds.left + from.width / 2 - 17, y = from.top - bounds.top;
         parcel.style.left = `${x}px`; parcel.style.top = `${y}px`; road.appendChild(parcel);
-        const dx = to.left - bounds.left + to.width / 2 - 17 - x, dy = to.top - bounds.top - y;
+        const dx = to.left - bounds.left + to.width / 2 - 17 - x, dy = to.top - bounds.top - y + (nightView.height + 180) / 2.4 * .65;
         const motion = parcel.animate(Array.from({length:21}, (_,i) => {const t=i/20;return {transform:`translate(${dx*t}px,${dy*t-130*4*t*(1-t)}px) rotate(${t*300}deg) scale(${1-t*.4})`,opacity:t===1?0:1};}),{duration:650,easing:"linear"});
         motion.onfinish = () => parcel.remove();
       }
@@ -938,7 +989,7 @@
       } else if (order) {
         showNightMessage("💨 앗! 배송을 놓쳤어요!");
       }
-      nightTimers.push(setTimeout(() => removeRoadObject(target), 700));
+      state.night.departingTargets.push(target);
       state.night.currentTarget = null;
       state.night.mode = "racing";
       state.night.raceLeft = 4.2;
@@ -961,7 +1012,7 @@
       void van.offsetWidth;
       van.classList.add("hit");
       showNightMessage("쿵! 시간 -2초");
-      setTimeout(() => van.classList.remove("hit"), 800);
+      nightTimers.push(setTimeout(() => van.classList.remove("hit"), 800));
     }
 
     function removeRoadObject(item) {
@@ -984,9 +1035,11 @@
 
     function updateNightHud() {
       if (!state.night) return;
-      document.getElementById("timeValue").textContent = `${state.night.timeLeft.toFixed(1)}초`;
-      document.getElementById("deliveryValue").textContent = `${state.night.delivered} / ${state.night.loadedOrderIds.length}`;
-      document.getElementById("nightEarnings").textContent = `${state.night.earnings}냥`;
+      const values = {timeValue: `${state.night.timeLeft.toFixed(1)}초`, deliveryValue: `${state.night.delivered} / ${state.night.loadedOrderIds.length}`, nightEarnings: `${state.night.earnings}냥`};
+      for (const [id, value] of Object.entries(values)) {
+        const element = document.getElementById(id);
+        if (element.textContent !== value) element.textContent = value;
+      }
     }
 
     function clearNightRuntime() {
@@ -1107,6 +1160,10 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toast.classList.remove("show"), 1900);
     }
+
+    window.addEventListener("resize", () => {
+      if (state && state.phase === "night") measureNightRoad();
+    });
 
     document.addEventListener("keydown", event => {
       if (!state || state.phase !== "night") return;

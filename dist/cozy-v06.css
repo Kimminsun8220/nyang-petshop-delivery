@@ -113,3 +113,25 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
   .mobile-controls{gap:7px}.night-top{gap:5px}.night-stat{border-radius:15px;padding:7px 3px}
   .delivery-gate .gate-cat{width:62px;height:89px}.van::before{width:56px;height:73px}.van{height:74px}
 }
+
+/* One continuous world: fixed controls, moving scenery, and a separately sprung vehicle body. */
+#nightScreen{position:relative;isolation:isolate;overflow:hidden;background:#645060}
+.night-scenery{position:absolute;inset:-7%;z-index:0;pointer-events:none;background:linear-gradient(#4c385922,#392b4438),url('assets/petshop-night-v06.png') center/cover;transform-origin:50% 30%;will-change:transform}
+.night-shell{position:relative;z-index:1}
+#nightScreen{height:100svh;min-height:620px}
+#nightScreen .night-shell{height:100%;display:grid;grid-template-rows:auto minmax(240px,1fr) 77px 58px auto;gap:8px}
+#nightScreen .night-top,#nightScreen .mobile-controls,#nightScreen .night-help{margin:0}
+#nightScreen .road{height:100%;min-height:0}
+.timing-panel{word-break:keep-all}
+.timing-slot{height:77px;position:relative;display:flow-root}
+.timing-slot>.timing-panel:not(.delivery-active){height:61px;margin:8px 0;overflow:hidden}
+.road{contain:layout paint}
+.road::before{inset:-88px 0 0;background-position:33.333% 0,66.666% 0;animation:none;transform:translate3d(0,var(--road-scroll,0px),0);will-change:transform}
+.van{left:5.65%;transform:translate3d(var(--van-x,0px),0,0);transition:none;will-change:transform}
+.van::before{transform:translate3d(0,var(--body-bob,0px),0) rotate(var(--body-lean,0deg));transform-origin:50% 80%;will-change:transform}
+.van.hit{animation:none}
+.van.hit::before{animation:cozyBodyHit .18s linear 4}
+@keyframes cozyBodyHit{25%{transform:translate3d(-3px,-2px,0) rotate(-3deg)}75%{transform:translate3d(3px,1px,0) rotate(3deg)}}
+.timing-panel #timingNeedle,.timing-panel.delivery-active #timingNeedle{left:0;width:100%;background:none;box-shadow:none;will-change:transform}
+#timingNeedle::after{content:'';position:absolute;left:0;top:0;width:6px;height:100%;background:#fffaf0;box-shadow:0 0 5px white}
+@media(prefers-reduced-motion:reduce){.van::before,.van.hit::before{transform:none;animation:none}}
