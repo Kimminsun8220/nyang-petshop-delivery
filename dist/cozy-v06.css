@@ -29,7 +29,9 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .cat-face {position:absolute;left:9px;top:17px;width:80px;height:80px;border-radius:0;background-color:transparent;box-shadow:none;font-size:0;color:transparent;background-image:url('assets/petshop-sprites-v06.png');background-size:400% 200%;background-position:0 0}
 .customer-card:nth-child(2) .cat-face {background-position:33.333333% 0}
 .customer-card:nth-child(3) .cat-face {background-position:66.666667% 0}
-.customer-card.delayed .cat-face {filter:saturate(.6)}
+.customer-card.delayed .cat-face {filter:none}
+/* Overlay only the edited face inside the original opaque fur; retain its transparent silhouette. */
+.customer-card.delayed .cat-face::after {content:'';position:absolute;inset:0;background-image:url('assets/petshop-sprites-sad-v08.png');background-size:inherit;background-position:inherit;clip-path:ellipse(32% 17% at 50% 43%);pointer-events:none}
 .speech {font-size:13px;padding:4px 7px;margin:4px 0;background:#fffdf6;border:1px solid #dfc8af;border-radius:10px 10px 10px 1px;line-height:1.35}
 .order-row {font-size:14px;clear:none}.price{color:#a26739}
 .status-badge {font-size:12px;margin-top:4px;padding:3px 8px;background:#e6edd8;color:#4d7144}
