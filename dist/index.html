@@ -694,6 +694,7 @@
     function selectOrder(orderId) {
       const order = getOrder(orderId);
       if (!order) return;
+      window.gameSound?.sfx("meow");
       state.selectedOrderId = orderId;
       renderDay();
       if (order.status === "ready") showToast("이미 완성된 주문이에요. 밤에 배송해 주세요! 📦");
@@ -1059,6 +1060,7 @@
         state.night.delivered += 1;
         state.night.earnings += order.price;
         state.reputation = Math.min(100, state.reputation + 3);
+        window.gameSound?.sfx("meow");
         showNightMessage(`✨ PERFECT! 배송 성공! +${order.price}냥`);
       } else if (order) {
         showNightMessage("💨 앗! 배송을 놓쳤어요!");
@@ -1305,6 +1307,6 @@
     state = freshState();
   </script>
   <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="음악과 효과음 끄기">🔊 소리 켜짐</button>
-  <script src="petshop-audio-v12.js?v=25"></script>
+  <script src="petshop-audio-v12.js?v=27"></script>
 </body>
 </html>

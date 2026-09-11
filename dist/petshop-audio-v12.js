@@ -86,7 +86,7 @@ window.gameSound = (() => {
       return;
     }
     unlock();
-    if (!button.matches('.drive-btn,#throwButton,.mascot-cat')) sfx('click');
+    if (!button.matches('.drive-btn,#throwButton,.mascot-cat,.customer-card')) sfx('click');
   }, true);
   document.addEventListener('keydown', event => {
     if (!event.repeat && ['ArrowLeft','ArrowRight','a','A','d','D','Enter',' '].includes(event.key)) unlock();
