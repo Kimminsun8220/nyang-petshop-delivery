@@ -135,5 +135,7 @@ window.gameSound = (() => {
   });
   window.addEventListener('pagehide',silence);
   label();
+  // Browsers with autoplay permission can start now; otherwise user input resumes it.
+  unlock();
   return { sfx };
 })();

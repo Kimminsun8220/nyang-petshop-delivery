@@ -29,7 +29,7 @@
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+      font-family: "Petshop Nanum Round", "Malgun Gothic", sans-serif;
       background: #fff4e7;
       overflow-x: hidden;
     }
@@ -322,6 +322,10 @@
     .logo-cat.mascot-cat.stretching{animation:catStretch 2.6s steps(1,end)}
     @keyframes catStretch{0%,100%{background-position:0 0}10%{background-position:33.333333% 0}22%{background-position:66.666667% 0}34%{background-position:100% 0}46%{background-position:0 100%}62%{background-position:33.333333% 100%}78%{background-position:66.666667% 100%}90%{background-position:100% 100%}}
     @media(prefers-reduced-motion:reduce){.logo-cat.mascot-cat.stretching{animation:none}}
+    @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundL.ttf') format('truetype');font-weight:100 300;font-display:swap}
+    @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundR.ttf') format('truetype');font-weight:400 500;font-display:swap}
+    @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
+    @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
   <link rel="stylesheet" href="cozy-v06.css?v=14">
 </head>
@@ -1315,6 +1319,6 @@
     <button id="soundToggle" class="speaker-icon" type="button" aria-expanded="false" aria-controls="volumePanel" aria-label="소리 켜짐 · 볼륨 조절 열기">🔊</button>
   </div>
   <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
-  <script src="petshop-audio-v12.js?v=30"></script>
+  <script src="petshop-audio-v12.js?v=31"></script>
 </body>
 </html>
