@@ -1,7 +1,10 @@
-/* Original, softly synthesized music and effects; no downloads or autoplay. */
+/* Synthesized music/effects and a user-provided meow recording. */
 window.gameSound = (() => {
   let context, master, timer, nextNote = 0, step = 0, muted = false;
   const voices = new Set();
+  const meow = new Audio('assets/meow-v28.mp3');
+  meow.preload = 'auto';
+  meow.volume = .65;
   const melody = [72,76,79,76,74,0,71,67,69,72,76,72,67,0,64,67,
     65,69,72,69,67,0,64,60,62,67,71,74,72,0,67,0];
   const roots = [48,45,41,43];
@@ -41,6 +44,8 @@ window.gameSound = (() => {
   }
   function silence() {
     clearInterval(timer); timer = null;
+    meow.pause();
+    meow.currentTime = 0;
     if (!context) return;
     master.gain.cancelScheduledValues(context.currentTime);
     master.gain.setTargetAtTime(0,context.currentTime,.012);
@@ -63,15 +68,18 @@ window.gameSound = (() => {
     } catch (_) { /* Sound must never interrupt game actions. */ }
   }
   function sfx(kind) {
-    if (!context || muted || document.hidden) return;
+    if (muted || document.hidden) return;
+    if (kind === 'meow') {
+      try {
+        meow.pause();
+        meow.currentTime = 0;
+        meow.play().catch(() => {});
+      } catch (_) {}
+      return;
+    }
+    if (!context) return;
     try {
-      if (kind === 'meow') {
-        const now = context.currentTime;
-        tone(420,780,.16,.12,'triangle',now);
-        tone(780,330,.48,.13,'triangle',now+.14);
-        tone(1200,660,.42,.025,'sine',now+.16);
-      }
-      else if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
+      if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
       else if (kind === 'move') tone(240,520,.11,.11,'sine');
       else if (kind === 'throw') { tone(850,160,.24,.13,'triangle'); tone(420,1000,.13,.05,'sine'); }
       else { tone(520,190,.19,.15,'sine'); tone(260,390,.10,.035,'triangle'); }
