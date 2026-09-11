@@ -65,7 +65,13 @@ window.gameSound = (() => {
   function sfx(kind) {
     if (!context || muted || document.hidden) return;
     try {
-      if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
+      if (kind === 'meow') {
+        const now = context.currentTime;
+        tone(420,780,.16,.12,'triangle',now);
+        tone(780,330,.48,.13,'triangle',now+.14);
+        tone(1200,660,.42,.025,'sine',now+.16);
+      }
+      else if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
       else if (kind === 'move') tone(240,520,.11,.11,'sine');
       else if (kind === 'throw') { tone(850,160,.24,.13,'triangle'); tone(420,1000,.13,.05,'sine'); }
       else { tone(520,190,.19,.15,'sine'); tone(260,390,.10,.035,'triangle'); }
@@ -80,7 +86,7 @@ window.gameSound = (() => {
       return;
     }
     unlock();
-    if (!button.matches('.drive-btn,#throwButton')) sfx('click');
+    if (!button.matches('.drive-btn,#throwButton,.mascot-cat')) sfx('click');
   }, true);
   document.addEventListener('keydown', event => {
     if (!event.repeat && ['ArrowLeft','ArrowRight','a','A','d','D','Enter',' '].includes(event.key)) unlock();

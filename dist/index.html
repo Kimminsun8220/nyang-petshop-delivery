@@ -318,6 +318,10 @@
     .reputation-help:hover::details-content{content-visibility:visible}
     .reputation-tip{display:none;position:absolute;right:0;top:100%;z-index:80;width:260px;max-width:75vw;padding:12px;background:#fff7e8;color:#62452e;border:2px solid #bf956e;border-radius:12px;box-shadow:0 6px 18px #50342133;text-align:left;font-size:14px;font-weight:400;line-height:1.6}
     .reputation-help[open] .reputation-tip,.reputation-help:hover .reputation-tip,.reputation-help:focus-within .reputation-tip{display:block}
+    .logo-cat.mascot-cat{display:block;border:0;padding:0;background-color:transparent;background-position:33.333333% 22.388%;cursor:pointer;animation:none;transform-origin:center bottom}
+    .logo-cat.mascot-cat.stretching{animation:catStretch .9s ease-in-out}
+    @keyframes catStretch{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(1.08,.9) rotate(-4deg)}65%{transform:scale(.92,1.13) rotate(4deg)}85%{transform:scale(1.03,.97)}}
+    @media(prefers-reduced-motion:reduce){.logo-cat.mascot-cat.stretching{animation:none}}
   </style>
   <link rel="stylesheet" href="cozy-v06.css?v=14">
 </head>
@@ -327,16 +331,11 @@
       <span class="start-paw" style="left:7%;top:10%;--r:-18deg">🐾</span>
       <span class="start-paw" style="right:8%;bottom:12%;--r:21deg">🐾</span>
       <div class="start-card">
-        <div class="logo-cat" aria-hidden="true">😺🏪</div>
+        <button class="logo-cat mascot-cat" type="button" aria-label="고양이와 인사하기" onpointerenter="greetCat(this)" onclick="greetCat(this, true)"></button>
         <h1 id="gameTitle">냥냥 펫샵<br>딜리버리</h1>
         <p class="tagline">낮에는 만들고, 밤에는 달린다!</p>
         <p class="subcopy">고양이 손님의 주문을 만들고<br>세 차선 도시를 달려 직접 배송해 보세요.</p>
         <button class="primary-btn start-btn" type="button" onclick="startGame()">가게 열기 🐾</button>
-        <div class="controls-note">
-          <span class="pill">☀️ 낮: 클릭으로 제작</span>
-          <span class="pill">🌙 밤: ← → / A D · SPACE 던지기</span>
-          <span class="pill">📱 화면 버튼 지원</span>
-        </div>
       </div>
     </section>
 
@@ -479,6 +478,16 @@
     let animationId = null;
     let nightView = null;
     let nightTimers = [];
+
+    let lastCatGreeting = 0;
+    function greetCat(button, clicked = false) {
+      if (performance.now() - lastCatGreeting < 900 && !clicked) return;
+      lastCatGreeting = performance.now();
+      button.classList.remove("stretching");
+      void button.offsetWidth;
+      button.classList.add("stretching");
+      window.gameSound?.sfx("meow");
+    }
 
     function freshState() {
       return {
@@ -1293,6 +1302,6 @@
     state = freshState();
   </script>
   <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="음악과 효과음 끄기">🔊 소리 켜짐</button>
-  <script src="petshop-audio-v12.js?v=13"></script>
+  <script src="petshop-audio-v12.js?v=25"></script>
 </body>
 </html>
