@@ -5,6 +5,11 @@ window.gameSound = (() => {
   const voices = new Set();
   const musicVoices = new Set();
   let dayScene = true;
+  let nightScene = false;
+  const nightMusic = new Audio('assets/night-music-v34.mp3');
+  nightMusic.loop = true;
+  nightMusic.preload = 'auto';
+  nightMusic.volume = .45 * volume;
   const dayMusic = new Audio('assets/day-music-v32.mp3');
   dayMusic.loop = true;
   dayMusic.preload = 'auto';
@@ -18,8 +23,12 @@ window.gameSound = (() => {
   dayMusic.addEventListener('playing', () => audioHint());
   function setScene(screen) {
     const nextDay = screen === 'startScreen' || screen === 'dayScreen';
-    if (nextDay === dayScene) return;
+    const nextNight = screen === 'nightScreen';
+    if (nextDay === dayScene && nextNight === nightScene) return;
     dayScene = nextDay;
+    nightScene = nextNight;
+    nightMusic.pause();
+    if (nightScene) nightMusic.currentTime = 0;
     dayMusic.pause();
     clearInterval(timer); timer = null;
     for (const voice of musicVoices) { try { voice.stop(); } catch (_) {} }
@@ -32,6 +41,7 @@ window.gameSound = (() => {
   function applyVolume() {
     meow.volume = muted ? 0 : .65 * volume;
     dayMusic.volume = muted ? 0 : .45 * volume;
+    nightMusic.volume = muted ? 0 : .45 * volume;
     if (context) master.gain.setTargetAtTime(muted || document.hidden ? 0 : .5 * volume, context.currentTime, .02);
     document.getElementById('volumeValue').textContent = `${Math.round(volume * 100)}%`;
   }
@@ -71,7 +81,7 @@ window.gameSound = (() => {
     oscillator.start(when); oscillator.stop(when + duration + .03);
   }
   function schedule() {
-    if (dayScene || !context || muted || document.hidden || context.state !== 'running') return;
+    if (dayScene || nightScene || !context || muted || document.hidden || context.state !== 'running') return;
     if (nextNote < context.currentTime) nextNote = context.currentTime + .04;
     while (nextNote < context.currentTime + .25) {
       const note = melody[step % melody.length];
@@ -84,6 +94,7 @@ window.gameSound = (() => {
     }
   }
   function silence() {
+    nightMusic.pause();
     audioHint();
     dayMusic.pause();
     clearInterval(timer); timer = null;
@@ -96,6 +107,7 @@ window.gameSound = (() => {
   }
   function unlock() {
     if (muted || document.hidden) return;
+    if (nightScene && nightMusic.paused) nightMusic.play().catch(() => {});
     if (dayScene && dayMusic.paused) dayMusic.play().then(() => audioHint()).catch(error => {
       if (muted || document.hidden || !dayScene) return;
       if (error.name === 'NotAllowedError') audioHint('🔊 화면을 한 번 누르면 음악이 시작돼요');
@@ -111,7 +123,7 @@ window.gameSound = (() => {
       context.resume().then(() => {
         if (muted || document.hidden) return;
         master.gain.setTargetAtTime(.5 * volume,context.currentTime,.04);
-        if (!dayScene && !timer) { nextNote = context.currentTime + .08; schedule(); timer = setInterval(schedule,100); }
+        if (!dayScene && !nightScene && !timer) { nextNote = context.currentTime + .08; schedule(); timer = setInterval(schedule,100); }
       }).catch(() => {});
     } catch (_) { /* Sound must never interrupt game actions. */ }
   }
