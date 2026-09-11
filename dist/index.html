@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=44">
+  <link rel="stylesheet" href="cozy-v06.css?v=46">
 </head>
 <body>
   <main>
@@ -357,13 +357,18 @@
         </header>
 
         <div class="section-title">
-          <h2>🐾 오늘의 고양이 손님</h2>
+          <h2 class="customer-title"><span class="customer-title-icon" aria-hidden="true">🐾</span><span class="customer-title-copy">오늘의 고양이 손님</span></h2>
           <p>빈자리에만 새 손님이 와요</p>
         </div>
         <div id="customerGrid" class="customer-grid"></div>
 
+        <div id="dayWorkbench" class="day-workbench" data-pane="shop">
+          <div class="day-pane-switch" role="group" aria-label="제작 화면 전환">
+            <button type="button" id="shopPaneButton" aria-controls="shopPane" aria-pressed="true" onclick="setDayPane('shop')">🛒 재료 상점</button>
+            <button type="button" id="craftPaneButton" aria-controls="craftPane" aria-pressed="false" onclick="setDayPane('craft')">🧺 조합대 · 내 가방</button>
+          </div>
         <div class="day-grid">
-          <div>
+          <div id="shopPane">
             <div class="section-title"><h2>🧺 재료 상점</h2><p>필요한 만큼 하나씩 구매</p></div>
             <section class="panel" aria-label="재료 상점">
               <div id="shopGrid" class="shop-grid"></div>
@@ -375,7 +380,7 @@
             </details>
           </div>
 
-          <div>
+          <div id="craftPane">
             <div class="section-title"><h2>✨ 포근포근 조합대</h2><p>순서대로 재료를 눌러요</p></div>
             <section id="craftPanel" class="panel craft-panel" aria-live="polite"></section>
 
@@ -388,6 +393,7 @@
               </div>
             </section>
           </div>
+        </div>
         </div>
       </div>
     </section>
@@ -531,6 +537,7 @@
 
     function startGame() {
       state = freshState();
+      setDayPane('shop');
       const firstProducts = ["snack", "food", "toy"];
       firstProducts.forEach((productId, slotIndex) => {
         state.customerSlots[slotIndex] = createOrder(slotIndex, productId);
@@ -539,6 +546,14 @@
       renderDay();
       setScreen("dayScreen");
       showToast("DAY 1! 고양이 손님들의 주문을 준비해 주세요 🐾");
+    }
+
+    function setDayPane(pane) {
+      if (pane !== 'shop' && pane !== 'craft') return;
+      const workbench = document.getElementById('dayWorkbench');
+      workbench.dataset.pane = pane;
+      document.getElementById('shopPaneButton').setAttribute('aria-pressed', String(pane === 'shop'));
+      document.getElementById('craftPaneButton').setAttribute('aria-pressed', String(pane === 'craft'));
     }
 
     function restartGame() {

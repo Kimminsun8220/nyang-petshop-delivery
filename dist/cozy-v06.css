@@ -22,6 +22,10 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .section-title {align-items:center;margin-top:12px}
 .section-title h2 {background:#fff5e4e8;padding:3px 9px;border-radius:8px;color:#614531}
 .section-title p {background:#fff5e4e8;border-radius:8px;padding:4px 8px;font-size:12px;color:#755b47}
+.section-title .customer-title{display:flex;align-items:flex-start;gap:8px;line-height:1.35}
+.customer-title-icon{flex:none}
+.customer-title-copy{min-width:0;word-break:keep-all}
+.day-pane-switch{display:none}
 .customer-card,.panel {background:linear-gradient(135deg,#fffaf1,#f8ebd9);border:2px solid #c6a078;box-shadow:var(--shadow)}
 .customer-card {padding:10px 12px 10px 94px;min-height:130px;border-radius:18px 18px 14px 14px}
 .customer-card:hover {border-color:#ac7853;transform:translateY(-2px)}
@@ -112,6 +116,11 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .van::before{width:64px;height:84px;background-size:400% 305.854%;background-position:0 79.384%}
 .material-card:nth-child(6) .material-icon{width:32px;height:42px;font-size:0;background:url('assets/petshop-sprites-v06.png') 100% 79.384%/400% 305.854%;margin:auto}
 @media(max-width:820px){
+  .day-pane-switch{display:flex;gap:8px;position:sticky;top:0;z-index:10;padding:8px 0;background:#f5e4ca;border-radius:12px;margin-top:10px}
+  .day-pane-switch button{flex:1;min-width:0;min-height:46px;padding:8px 6px;border:2px solid #c6a078;border-radius:12px;background:#fff6e7;color:#74513b;font:inherit;font-weight:800;cursor:pointer}
+  .day-pane-switch button[aria-pressed="true"]{background:#f7baa6;border-color:#ad7257;color:#553723;box-shadow:inset 0 2px #ffdfc9}
+  .day-workbench[data-pane="shop"] #craftPane,.day-workbench[data-pane="craft"] #shopPane{display:none}
+  .day-workbench .day-grid{min-height:420px}
   .brand{font-size:17px}.brand-text{display:block}.brand-text::after{display:none}.brand-icon{display:none}
   .day-shell{padding:8px}.topbar{padding:7px 10px;align-items:center}.stat{min-width:64px;padding:3px 6px}.stat strong{font-size:16px}
   .customer-card{min-height:113px;padding-left:94px}.cat-face{top:12px}
@@ -119,7 +128,7 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
   #dayScreen,#nightScreen,#startScreen,#resultScreen,#gameoverScreen{background-attachment:scroll}
 }
 @media(max-width:480px){
-  .brand-text{font-size:14px;white-space:nowrap}.stats{gap:3px}.stat{min-width:56px}.stat small{font-size:11px}
+  .brand-text{font-size:22px;line-height:1.3;white-space:normal;word-break:keep-all}.brand{flex:1;min-width:70px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;flex-shrink:0}.stat{min-width:56px}.stat small{font-size:11px}
   .night-stat strong{font-size:20px}.night-stat small{font-size:12px}.drive-btn,#throwButton{font-size:14px;border-radius:15px}
   .mobile-controls{gap:7px}.night-top{gap:5px}.night-stat{border-radius:15px;padding:7px 3px}
   .delivery-gate .gate-cat{width:62px;height:89px}.van::before{width:56px;height:73px}.van{height:74px}
