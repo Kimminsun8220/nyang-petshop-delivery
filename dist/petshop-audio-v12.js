@@ -3,11 +3,28 @@ window.gameSound = (() => {
   let context, master, timer, nextNote = 0, step = 0, muted = false;
   let volume = .8;
   const voices = new Set();
+  const musicVoices = new Set();
+  let dayScene = true;
+  const dayMusic = new Audio('assets/day-music-v32.mp3');
+  dayMusic.loop = true;
+  dayMusic.preload = 'auto';
+  dayMusic.volume = .45 * volume;
+  function setScene(screen) {
+    const nextDay = screen === 'startScreen' || screen === 'dayScreen';
+    if (nextDay === dayScene) return;
+    dayScene = nextDay;
+    dayMusic.pause();
+    clearInterval(timer); timer = null;
+    for (const voice of musicVoices) { try { voice.stop(); } catch (_) {} }
+    musicVoices.clear();
+    unlock();
+  }
   const meow = new Audio('assets/meow-v28.mp3');
   meow.preload = 'auto';
   meow.volume = .65 * volume;
   function applyVolume() {
     meow.volume = muted ? 0 : .65 * volume;
+    dayMusic.volume = muted ? 0 : .45 * volume;
     if (context) master.gain.setTargetAtTime(muted || document.hidden ? 0 : .5 * volume, context.currentTime, .02);
     document.getElementById('volumeValue').textContent = `${Math.round(volume * 100)}%`;
   }
@@ -32,7 +49,7 @@ window.gameSound = (() => {
     muteButton.setAttribute('aria-pressed', String(muted));
     muteButton.setAttribute('aria-label', muted ? '음소거 해제' : '음소거');
   }
-  function tone(from, to, duration, volume, type = 'sine', when = context.currentTime) {
+  function tone(from, to, duration, volume, type = 'sine', when = context.currentTime, music = false) {
     const oscillator = context.createOscillator(), gain = context.createGain();
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(from, when);
@@ -42,23 +59,25 @@ window.gameSound = (() => {
     gain.gain.exponentialRampToValueAtTime(.0001, when + duration);
     oscillator.connect(gain); gain.connect(master);
     voices.add(oscillator);
-    oscillator.onended = () => { voices.delete(oscillator); oscillator.disconnect(); gain.disconnect(); };
+    if (music) musicVoices.add(oscillator);
+    oscillator.onended = () => { voices.delete(oscillator); musicVoices.delete(oscillator); oscillator.disconnect(); gain.disconnect(); };
     oscillator.start(when); oscillator.stop(when + duration + .03);
   }
   function schedule() {
-    if (!context || muted || document.hidden || context.state !== 'running') return;
+    if (dayScene || !context || muted || document.hidden || context.state !== 'running') return;
     if (nextNote < context.currentTime) nextNote = context.currentTime + .04;
     while (nextNote < context.currentTime + .25) {
       const note = melody[step % melody.length];
-      if (note) tone(hz(note), hz(note), .9, .13, 'sine', nextNote);
+      if (note) tone(hz(note), hz(note), .9, .13, 'sine', nextNote, true);
       if (step % 8 === 0) {
         const root = roots[Math.floor(step/8) % roots.length];
-        [root,root+7,root+12].forEach(n => tone(hz(n),hz(n),3.1,.038,'sine',nextNote));
+        [root,root+7,root+12].forEach(n => tone(hz(n),hz(n),3.1,.038,'sine',nextNote,true));
       }
       step++; nextNote += .42;
     }
   }
   function silence() {
+    dayMusic.pause();
     clearInterval(timer); timer = null;
     meow.pause();
     meow.currentTime = 0;
@@ -69,6 +88,7 @@ window.gameSound = (() => {
   }
   function unlock() {
     if (muted || document.hidden) return;
+    if (dayScene && dayMusic.paused) dayMusic.play().catch(() => {});
     try {
       if (!context) {
         const Audio = window.AudioContext || window.webkitAudioContext;
@@ -79,7 +99,7 @@ window.gameSound = (() => {
       context.resume().then(() => {
         if (muted || document.hidden) return;
         master.gain.setTargetAtTime(.5 * volume,context.currentTime,.04);
-        if (!timer) { nextNote = context.currentTime + .08; schedule(); timer = setInterval(schedule,100); }
+        if (!dayScene && !timer) { nextNote = context.currentTime + .08; schedule(); timer = setInterval(schedule,100); }
       }).catch(() => {});
     } catch (_) { /* Sound must never interrupt game actions. */ }
   }
@@ -131,11 +151,11 @@ window.gameSound = (() => {
     if (!event.repeat && ['ArrowLeft','ArrowRight','a','A','d','D','Enter',' '].includes(event.key)) unlock();
   }, true);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) silence(); else if (context) unlock();
+    if (document.hidden) silence(); else unlock();
   });
   window.addEventListener('pagehide',silence);
   label();
   // Browsers with autoplay permission can start now; otherwise user input resumes it.
   unlock();
-  return { sfx };
+  return { sfx, setScene };
 })();
