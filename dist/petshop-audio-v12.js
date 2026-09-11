@@ -9,6 +9,13 @@ window.gameSound = (() => {
   dayMusic.loop = true;
   dayMusic.preload = 'auto';
   dayMusic.volume = .45 * volume;
+  function audioHint(message = '') {
+    const hint = document.getElementById('audioStartHint');
+    if (!hint) return;
+    hint.textContent = message;
+    hint.hidden = !message;
+  }
+  dayMusic.addEventListener('playing', () => audioHint());
   function setScene(screen) {
     const nextDay = screen === 'startScreen' || screen === 'dayScreen';
     if (nextDay === dayScene) return;
@@ -77,6 +84,7 @@ window.gameSound = (() => {
     }
   }
   function silence() {
+    audioHint();
     dayMusic.pause();
     clearInterval(timer); timer = null;
     meow.pause();
@@ -88,7 +96,11 @@ window.gameSound = (() => {
   }
   function unlock() {
     if (muted || document.hidden) return;
-    if (dayScene && dayMusic.paused) dayMusic.play().catch(() => {});
+    if (dayScene && dayMusic.paused) dayMusic.play().then(() => audioHint()).catch(error => {
+      if (muted || document.hidden || !dayScene) return;
+      if (error.name === 'NotAllowedError') audioHint('🔊 화면을 한 번 누르면 음악이 시작돼요');
+      else if (error.name !== 'AbortError') audioHint('음악을 불러오지 못했어요. 다시 눌러 주세요.');
+    });
     try {
       if (!context) {
         const Audio = window.AudioContext || window.webkitAudioContext;
@@ -128,8 +140,10 @@ window.gameSound = (() => {
       document.getElementById('soundToggle').setAttribute('aria-expanded', 'false');
     }
     const button = event.target.closest('button,[role="button"]');
-    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+    if (!button) { unlock(); return; }
+    if (button.disabled || button.getAttribute('aria-disabled') === 'true') return;
     if (button.id === 'soundToggle') {
+      unlock();
       panel.hidden = !panel.hidden;
       button.setAttribute('aria-expanded', String(!panel.hidden));
       return;
