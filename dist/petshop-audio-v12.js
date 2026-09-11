@@ -1,10 +1,21 @@
 /* Synthesized music/effects and a user-provided meow recording. */
 window.gameSound = (() => {
   let context, master, timer, nextNote = 0, step = 0, muted = false;
+  let volume = .8;
   const voices = new Set();
   const meow = new Audio('assets/meow-v28.mp3');
   meow.preload = 'auto';
-  meow.volume = .65;
+  meow.volume = .65 * volume;
+  function applyVolume() {
+    meow.volume = muted ? 0 : .65 * volume;
+    if (context) master.gain.setTargetAtTime(muted || document.hidden ? 0 : .5 * volume, context.currentTime, .02);
+    document.getElementById('volumeValue').textContent = `${Math.round(volume * 100)}%`;
+  }
+  document.getElementById('soundVolume').addEventListener('input', event => {
+    volume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
+    applyVolume();
+    unlock();
+  });
   const melody = [72,76,79,76,74,0,71,67,69,72,76,72,67,0,64,67,
     65,69,72,69,67,0,64,60,62,67,71,74,72,0,67,0];
   const roots = [48,45,41,43];
@@ -34,10 +45,10 @@ window.gameSound = (() => {
     if (nextNote < context.currentTime) nextNote = context.currentTime + .04;
     while (nextNote < context.currentTime + .25) {
       const note = melody[step % melody.length];
-      if (note) tone(hz(note), hz(note), .9, .075, 'sine', nextNote);
+      if (note) tone(hz(note), hz(note), .9, .13, 'sine', nextNote);
       if (step % 8 === 0) {
         const root = roots[Math.floor(step/8) % roots.length];
-        [root,root+7,root+12].forEach(n => tone(hz(n),hz(n),3.1,.022,'sine',nextNote));
+        [root,root+7,root+12].forEach(n => tone(hz(n),hz(n),3.1,.038,'sine',nextNote));
       }
       step++; nextNote += .42;
     }
@@ -58,11 +69,11 @@ window.gameSound = (() => {
         const Audio = window.AudioContext || window.webkitAudioContext;
         if (!Audio) return;
         context = new Audio(); master = context.createGain();
-        master.gain.value = .5; master.connect(context.destination);
+        master.gain.value = .5 * volume; master.connect(context.destination);
       }
       context.resume().then(() => {
         if (muted || document.hidden) return;
-        master.gain.setTargetAtTime(.5,context.currentTime,.04);
+        master.gain.setTargetAtTime(.5 * volume,context.currentTime,.04);
         if (!timer) { nextNote = context.currentTime + .08; schedule(); timer = setInterval(schedule,100); }
       }).catch(() => {});
     } catch (_) { /* Sound must never interrupt game actions. */ }
@@ -82,14 +93,14 @@ window.gameSound = (() => {
       if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
       else if (kind === 'move') tone(240,520,.11,.11,'sine');
       else if (kind === 'throw') { tone(850,160,.24,.13,'triangle'); tone(420,1000,.13,.05,'sine'); }
-      else { tone(520,190,.19,.15,'sine'); tone(260,390,.10,.035,'triangle'); }
+      else { tone(520,190,.19,.26,'sine'); tone(260,390,.10,.06,'triangle'); }
     } catch (_) {}
   }
   document.addEventListener('click', event => {
     const button = event.target.closest('button,[role="button"]');
     if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
     if (button.id === 'soundToggle') {
-      muted = !muted; label();
+      muted = !muted; label(); applyVolume();
       if (muted) silence(); else { unlock(); sfx('click'); }
       return;
     }
