@@ -309,7 +309,7 @@
     .timing-panel.delivery-active #timingNeedle{width:6px}
     .timing-panel.delivery-active::after{content:'초록 구간에 흰 막대가 오면 SPACE / 📦 던지기';display:block;font-size:14px;margin-top:10px;color:#eee5ff}
     .timing-panel.delivery-active.ready{border-color:#80ffb6;box-shadow:0 0 28px #62f3a76b;background:rgba(18,64,47,.96)}
-    .delivery-gate{transform:translateY(var(--y)) scale(var(--approach-scale,1));transform-origin:center center}
+    .delivery-gate{transform:translateY(var(--y));transform-origin:center center}
     .parcel-flight{position:absolute;font-size:34px;z-index:30;pointer-events:none}
     .road{height:min(60vh,480px);min-height:280px}.delivery-gate{z-index:12}
     @media(min-width:1000px){.customer-grid{gap:10px}.day-grid{gap:12px}.craft-empty{max-height:100px}.craft-empty span{font-size:34px!important}.material-card{display:grid;grid-template-columns:32px 1fr;align-items:center;gap:2px}.material-icon{grid-row:1/3}.material-meta{margin:0}.buy-btn{grid-column:1/-1}.customer-head{float:left;margin-right:12px}.speech{margin-top:0}.order-row{clear:both}.customer-card{padding:8px 12px}}
@@ -870,7 +870,6 @@
       n.departingTargets.forEach(target => {
         target.y += n.difficulty.speed * dt;
         target.element.style.setProperty("--y", `${target.y}px`);
-        target.element.style.setProperty("--approach-scale", `${.55 + .65 * (target.y + 90) / (nightView.height + 180)}`);
       });
       n.departingTargets.filter(target => target.y > nightView.height + 100).forEach(removeRoadObject);
       n.departingTargets = n.departingTargets.filter(target => target.y <= nightView.height + 100);
@@ -924,7 +923,6 @@
       document.getElementById("nightObjects").appendChild(element);
       const y = -90;
       element.style.setProperty("--y", `${y}px`);
-      element.style.setProperty("--approach-scale", ".55");
       state.night.currentTarget = { orderId, lane, y, element };
       updateDeliveryPrompt();
     }
@@ -965,7 +963,6 @@
         target.y += state.night.difficulty.speed * dt;
         const progress = houseProgress(target);
         target.element.style.setProperty("--y", `${target.y}px`);
-        target.element.style.setProperty("--approach-scale", `${.55 + .65 * Math.min(1, progress)}`);
         nightView.needle.style.transform = `translate3d(${Math.min(99, progress * 100)}%,0,0)`;
         updateDeliveryPrompt();
         if (progress >= 1) resolveTarget(target, false);
