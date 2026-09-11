@@ -65,7 +65,8 @@ window.gameSound = (() => {
   function sfx(kind) {
     if (!context || muted || document.hidden) return;
     try {
-      if (kind === 'move') tone(240,520,.11,.11,'sine');
+      if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
+      else if (kind === 'move') tone(240,520,.11,.11,'sine');
       else if (kind === 'throw') { tone(850,160,.24,.13,'triangle'); tone(420,1000,.13,.05,'sine'); }
       else { tone(520,190,.19,.15,'sine'); tone(260,390,.10,.035,'triangle'); }
     } catch (_) {}

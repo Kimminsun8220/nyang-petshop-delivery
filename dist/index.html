@@ -315,7 +315,7 @@
     @media(min-width:1000px){.customer-grid{gap:10px}.day-grid{gap:12px}.craft-empty{max-height:100px}.craft-empty span{font-size:34px!important}.material-card{display:grid;grid-template-columns:32px 1fr;align-items:center;gap:2px}.material-icon{grid-row:1/3}.material-meta{margin:0}.buy-btn{grid-column:1/-1}.customer-head{float:left;margin-right:12px}.speech{margin-top:0}.order-row{clear:both}.customer-card{padding:8px 12px}}
     @media(max-width:820px){.day-shell{padding:8px}.inventory-title{flex-wrap:wrap}.customer-grid{gap:7px}.recipe-track{justify-content:flex-start}.day-grid{grid-template-columns:1fr}.dispatch-strip{position:static}}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css">
+  <link rel="stylesheet" href="cozy-v06.css?v=13">
 </head>
 <body>
   <main>
@@ -408,6 +408,7 @@
           <div id="nightObjects"></div>
           <div id="van" class="van" style="--lane:1" aria-label="배송 차량">🚐</div>
           <div id="nightMessage" class="night-message"></div>
+          <div id="collisionNotice" class="collision-notice" role="status"></div>
         </div>
         <div class="timing-slot"><div class="timing-panel"><span id="timingText">🏁 장애물을 피해 달려요 · 집에 도착하면 SPACE!</span><div class="timing-track"><span class="timing-zone"></span><span id="timingNeedle"></span></div></div></div>
         <div class="mobile-controls" aria-label="차량 이동 버튼">
@@ -788,6 +789,8 @@
       document.getElementById("nightMessage").classList.remove("show");
       document.getElementById("van").style.setProperty("--lane", 1);
       document.getElementById("van").classList.remove("hit");
+      document.getElementById("road").classList.remove("collision");
+      document.getElementById("collisionNotice").textContent = "";
       updateNightHud();
       setScreen("nightScreen");
       nightView = {
@@ -935,7 +938,6 @@
         }
       }
       const roadHeight = nightView.height;
-      const vehicleY = roadHeight - 105;
 
       const target = state.night.currentTarget;
       if (target && state.night.mode === "delivery") {
@@ -952,8 +954,8 @@
       state.night.obstacles.forEach(obstacle => {
         obstacle.y += obstacle.speed * dt;
         obstacle.element.style.setProperty("--y", `${obstacle.y}px`);
-        const closeToVan = obstacle.y > vehicleY - 38 && obstacle.y < vehicleY + 38;
-        if (!state.night.ending && !obstacle.hit && closeToVan && obstacle.lane === state.night.lane) hitObstacle(obstacle, now);
+        // The van eases between lanes: test its rendered body, not its destination lane.
+        if (!state.night.ending && !obstacle.hit && obstacleTouchesVan(obstacle)) hitObstacle(obstacle, now);
       });
       state.night.obstacles.filter(item => item.y > roadHeight + 80).forEach(removeRoadObject);
       state.night.obstacles = state.night.obstacles.filter(item => item.y <= roadHeight + 80);
@@ -1015,8 +1017,17 @@
       if (state.night.currentTargetIndex >= state.night.loadedOrderIds.length) finishNightSoon();
     }
 
+    function obstacleTouchesVan(obstacle) {
+      const van = nightView.van.getBoundingClientRect();
+      const item = obstacle.element.getBoundingClientRect();
+      const bodyWidth = Math.min(64, van.width) * .8;
+      const itemWidth = Math.min(46, item.width) * .85;
+      return Math.abs(van.left + van.width / 2 - item.left - item.width / 2) < (bodyWidth + itemWidth) / 2
+        && item.bottom - 5 > van.top + 12 && item.top + 5 < van.bottom - 8;
+    }
+
     function hitObstacle(obstacle, now) {
-      if (now < state.night.invulnerableUntil) return;
+      if (obstacle.hit || now < state.night.invulnerableUntil) return;
       obstacle.hit = true;
       state.night.invulnerableUntil = now + 800;
       state.night.timeLeft = Math.max(0, state.night.timeLeft - 2);
@@ -1024,8 +1035,20 @@
       van.classList.remove("hit");
       void van.offsetWidth;
       van.classList.add("hit");
-      showNightMessage("쿵! 시간 -2초");
-      nightTimers.push(setTimeout(() => van.classList.remove("hit"), 800));
+      obstacle.element.classList.add("struck");
+      const road = document.getElementById("road");
+      road.classList.add("collision");
+      document.getElementById("collisionNotice").textContent = "💥 쿵! 충돌 · 남은 시간 -2초";
+      window.gameSound?.sfx("hit");
+      updateNightHud();
+      nightTimers.push(setTimeout(() => {
+        // Do not clear feedback belonging to a more recent collision.
+        if (state.night && state.night.invulnerableUntil === now + 800) {
+          van.classList.remove("hit");
+          road.classList.remove("collision");
+          document.getElementById("collisionNotice").textContent = "";
+        }
+      }, 1200));
     }
 
     function removeRoadObject(item) {
@@ -1199,6 +1222,6 @@
     state = freshState();
   </script>
   <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="음악과 효과음 끄기">🔊 소리 켜짐</button>
-  <script src="petshop-audio-v12.js"></script>
+  <script src="petshop-audio-v12.js?v=13"></script>
 </body>
 </html>
