@@ -48,7 +48,7 @@ window.gameSound = (() => {
   });
   let moveVoice = 0;
   const moveBoosts = new Map();
-  const interactionBoost = 3;
+  const interactionBoost = 4.5;
   function applyVolume() {
     moveSounds.forEach(sound => { sound.volume = muted ? 0 : .65 * volume; });
     meow.volume = muted ? 0 : .65 * volume;
