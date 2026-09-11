@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=37">
+  <link rel="stylesheet" href="cozy-v06.css?v=38">
 </head>
 <body>
   <main>
@@ -338,7 +338,7 @@
         <button class="logo-cat mascot-cat" type="button" aria-label="고양이와 인사하기" onpointerenter="greetCat(this)" onclick="greetCat(this, true)"></button>
         <h1 id="gameTitle">냥냥 펫샵<br>딜리버리</h1>
         <p class="tagline">낮에는 만들고, 밤에는 달린다!</p>
-        <p class="subcopy">고양이 손님의 주문을 만들고<br>세 차선 도시를 달려 직접 배송해 보세요.</p>
+        <p class="subcopy">고양이 손님의 주문을 만들고<br>밤에는 도시를 달려 직접 배송해 보세요.</p>
         <button class="primary-btn start-btn" type="button" onclick="startGame()">가게 열기 🐾</button>
         <p id="audioStartHint" role="status" hidden style="font-size:14px;color:#806959;margin:12px 0 0"></p>
       </div>
@@ -1239,7 +1239,8 @@
         ? (state.money >= 0 && state.reputation === 0 && !state.customerSlots.some(Boolean)
           ? "손님들의 발길이 끊겼어요. 가게 영업을 마칩니다."
           : "정산 후 남은 돈과 재료로 영업을 이어가기 어려워요.")
-        : `${result.newCustomers}개의 빈 슬롯에 새 고양이 손님이 찾아왔어요.`;
+        : "";
+      document.getElementById("resultLead").hidden = !result.bankrupt;
       document.getElementById("resultSummary").innerHTML = `
         <div class="result-box"><small>배송 성공</small><strong>${result.delivered.length}건</strong></div>
         <div class="result-box"><small>이월</small><strong>${result.delayed.length}건</strong></div>
