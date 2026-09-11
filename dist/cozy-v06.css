@@ -26,6 +26,7 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .customer-title-icon{flex:none}
 .customer-title-copy{min-width:0;word-break:keep-all}
 .day-pane-switch{display:none}
+.shopping-memo{display:none}
 .customer-card,.panel {background:linear-gradient(135deg,#fffaf1,#f8ebd9);border:2px solid #c6a078;box-shadow:var(--shadow)}
 .customer-card {padding:10px 12px 10px 94px;min-height:130px;border-radius:18px 18px 14px 14px}
 .customer-card:hover {border-color:#ac7853;transform:translateY(-2px)}
@@ -116,6 +117,12 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .van::before{width:64px;height:84px;background-size:400% 305.854%;background-position:0 79.384%}
 .material-card:nth-child(6) .material-icon{width:32px;height:42px;font-size:0;background:url('assets/petshop-sprites-v06.png') 100% 79.384%/400% 305.854%;margin:auto}
 @media(max-width:820px){
+  .shopping-memo{display:block;padding:10px;margin-bottom:10px;background:#fff0ce;border:1px dashed #c39a66;border-radius:12px;font-size:14px;line-height:1.5}
+  .shopping-memo p{margin:5px 0}.shopping-memo ul{list-style:none;margin:7px 0;padding:0}.shopping-memo li{margin:3px 0}
+  .shopping-memo .missing{color:#a74f2f}.shopping-memo .stocked{color:#52733c}
+  .shopping-memo button{width:100%;min-height:42px;border:1px solid #af8759;border-radius:9px;background:#f6dba2;color:#61432e;font:inherit;font-weight:800;cursor:pointer}
+  .material-card.purchase-needed{border:2px solid #c28b3d;background:#fff3d4}
+  .material-card.purchase-needed .buy-btn{box-shadow:0 0 0 2px #eac884,0 2px 0 #537649}
   .day-pane-switch{display:flex;gap:8px;position:sticky;top:0;z-index:10;padding:8px 0;background:#f5e4ca;border-radius:12px;margin-top:10px}
   .day-pane-switch button{flex:1;min-width:0;min-height:46px;padding:8px 6px;border:2px solid #c6a078;border-radius:12px;background:#fff6e7;color:#74513b;font:inherit;font-weight:800;cursor:pointer}
   .day-pane-switch button[aria-pressed="true"]{background:#f7baa6;border-color:#ad7257;color:#553723;box-shadow:inset 0 2px #ffdfc9}

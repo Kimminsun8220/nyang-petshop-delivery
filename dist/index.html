@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=47">
+  <link rel="stylesheet" href="cozy-v06.css?v=48">
 </head>
 <body>
   <main>
@@ -371,6 +371,7 @@
           <div id="shopPane">
             <div class="section-title"><h2>🧺 재료 상점</h2><p>필요한 만큼 하나씩 구매</p></div>
             <section class="panel" aria-label="재료 상점">
+              <div id="shoppingMemo" class="shopping-memo" aria-live="polite"></div>
               <div id="shopGrid" class="shop-grid"></div>
             </section>
 
@@ -673,6 +674,7 @@
           <span class="recipe-icons">${product.recipe.map(key => MATERIALS[key].icon).join(" → ")}</span>
         </div>`).join("");
 
+      renderShoppingMemo();
       renderCraftPanel();
       const readyOrders = state.customerSlots.filter(order => order && order.status === "ready");
       document.getElementById("readyShelf").innerHTML = readyOrders.length
@@ -681,6 +683,33 @@
       document.getElementById("nightWarning").textContent = readyOrders.length
         ? `${readyOrders.length}개 주문을 싣고 출발해요. 준비하지 못한 주문도 오늘 밤 미배송으로 계산돼요.`
         : "준비 상품 없이 출발하면 모든 고객이 미배송 처리돼요.";
+    }
+
+    function shoppingNeeds(order) {
+      if (!order || order.status === 'ready' || order.status === 'delivered') return [];
+      const counts = {};
+      PRODUCTS[order.productId].recipe.slice(order.craftStep).forEach(key => { counts[key] = (counts[key] || 0) + 1; });
+      return Object.entries(counts).map(([key, count]) => ({ key, missing: Math.max(0, count - state.inventory[key]) }));
+    }
+
+    function renderShoppingMemo() {
+      const memo = document.getElementById('shoppingMemo');
+      const order = getOrder(state.selectedOrderId);
+      const needs = shoppingNeeds(order);
+      document.querySelectorAll('#shopGrid .material-card').forEach((card, index) => {
+        const key = Object.keys(MATERIALS)[index];
+        card.classList.toggle('purchase-needed', needs.some(item => item.key === key && item.missing > 0));
+      });
+      if (!order) {
+        memo.innerHTML = '<strong>📝 어떤 주문을 준비할까요?</strong><p>위에서 고양이 주문을 선택하면 필요한 재료를 알려드려요.</p>';
+        return;
+      }
+      const product = PRODUCTS[order.productId];
+      const ready = order.status === 'ready';
+      const stocked = needs.every(item => item.missing === 0);
+      memo.innerHTML = `<strong>${product.icon} ${order.customerName} · ${product.name}</strong>
+        ${ready ? '<p>✨ 이미 완성했어요! 배송 대기 중이에요.</p>' : `<ul>${needs.map(({key, missing}) => `<li>${MATERIALS[key].icon} ${MATERIALS[key].name}: <b class="${missing ? 'missing' : 'stocked'}">${missing ? `${missing}개 더 필요` : '✓ 준비 완료'}</b></li>`).join('')}</ul>`}
+        <button type="button" onclick="setDayPane('craft')">${ready ? '배송 대기 확인' : stocked ? '재료 준비 완료 · 조합대로' : '조합대 확인'} →</button>`;
     }
 
     function renderCraftPanel() {
