@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=49">
+  <link rel="stylesheet" href="cozy-v06.css?v=51">
 </head>
 <body>
   <main>
@@ -439,7 +439,7 @@
     <section id="resultScreen" class="screen" aria-live="polite">
       <div class="result-card">
         <div class="shop-closed-label">🌙 오늘의 영업 종료 · CLOSED</div>
-        <div class="result-icon">📋😺</div>
+        <div class="result-icon settlement-art"><img src="assets/settlement-cat-v50.png" alt="정산표 옆에 앉아 있는 고양이" width="144" height="96"></div>
         <h2 id="resultTitle">오늘의 정산</h2>
         <p id="resultLead"></p>
         <div id="resultSummary" class="result-summary"></div>
@@ -467,7 +467,7 @@
 
     const MATERIALS = {
       fish:      { name: "생선 베이스", icon: "🐟", price: 4 },
-      nutrition: { name: "영양 파우더", icon: "✨", price: 4 },
+      nutrition: { name: "영양 파우더", icon: "🫙", price: 4 },
       fabric:    { name: "천 조각", icon: "🧶", price: 3 },
       feather:   { name: "깃털", icon: "🪶", price: 2 },
       wood:      { name: "나무판", icon: "🪵", price: 7 },
@@ -1029,7 +1029,7 @@
       const element = document.createElement("div");
       element.className = "road-object delivery-gate";
       element.style.setProperty("--lane", lane);
-      element.innerHTML = `<span class="gate-cat">🏠</span>${order.customerName}네<br>${product.icon} 배송지`;
+      element.innerHTML = `<span class="gate-cat" aria-hidden="true">🏠</span><span class="gate-label"><span>${order.customerName}네</span><span>${product.icon} 배송지</span></span>`;
       document.getElementById("nightObjects").appendChild(element);
       const y = -90;
       element.style.setProperty("--y", `${y}px`);
@@ -1387,5 +1387,6 @@
   </div>
   <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
 <script src="petshop-audio-v12.js?v=43"></script>
+<script src="petshop-illustrations-v51.js"></script>
 </body>
 </html>

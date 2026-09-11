@@ -6,6 +6,12 @@
   --shadow:0 4px 0 #b9926b55,0 9px 18px #67472b24; --radius:18px;
 }
 body {background:#eed6b3;color:var(--ink)}
+.ui-art{display:inline-block;width:1.3em;height:1.3em;vertical-align:-.25em;overflow:hidden;color:transparent!important;text-shadow:none!important;white-space:nowrap;background-repeat:no-repeat;background-size:400% 400%;background-position:var(--icon-x,0%) var(--icon-y,0%);user-select:none}
+.ui-sheet-0{background-image:url('assets/ui-goods-v51.png')}
+.ui-sheet-1{background-image:url('assets/ui-actions-v51.png')}
+.ui-cat{background-image:url('assets/customer-cats-v44.png');width:1.05em;height:1.4em;background-position:33.333333% var(--icon-y)}
+.ui-settlement{background-image:url('assets/settlement-cat-v50.png');background-size:contain;background-position:center}
+.obstacle .ui-art{width:1em;height:1em;vertical-align:middle}
 button {letter-spacing:-.35px}
 button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 #dayScreen,#startScreen,#resultScreen,#gameoverScreen {
@@ -86,7 +92,11 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .van::before {content:'';display:block;width:86px;height:86px;max-width:100%;margin:auto;background:url('assets/petshop-sprites-v06.png') 0 100%/400% 200%}
 .delivery-gate {background:transparent;border:0;box-shadow:none;padding:0;color:#5b3e28;font-size:13px;text-shadow:0 1px #fff2cc;filter:drop-shadow(0 4px 3px #39263555)}
 .delivery-gate .gate-cat {width:94px;height:94px;max-width:100%;margin:auto;font-size:0;background:url('assets/petshop-sprites-v06.png') 100% 0/400% 200%}
-.delivery-gate {background:linear-gradient(transparent 76%,#fff0cb 76%);border-radius:10px}
+.delivery-gate {background:none;border-radius:10px;box-sizing:border-box;min-width:0;text-align:center}
+.gate-label{display:block;width:100%;box-sizing:border-box;padding:4px 3px;background:#fff0cb;border-radius:0 0 9px 9px;font-size:12px;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
+.gate-label>span{display:block}
+#resultScreen .settlement-art{font-size:0;line-height:0}
+.settlement-art img{display:block;width:144px;height:96px;max-width:100%;object-fit:contain;margin:auto}
 .drive-btn,#throwButton {background:linear-gradient(#ffb1a8,#df8582);border:2px solid #a66a61;border-radius:20px;color:#fff9ec;box-shadow:inset 0 2px #ffd7c7,0 4px 0 #82564e;font-size:18px;text-shadow:0 1px #a8645c}
 #throwButton {background:linear-gradient(#f1d49a,#d6ac70);border-color:#9a754b;color:#66492d;text-shadow:none;box-shadow:inset 0 2px #fff0c4,0 4px 0 #8d6948}
 #throwButton.ready {background:linear-gradient(#d5e8b1,#9ebd7b);border-color:#6e8b54;color:#355131;box-shadow:0 0 18px #cfefa766,inset 0 2px #f0ffcf,0 4px 0 #658348}
