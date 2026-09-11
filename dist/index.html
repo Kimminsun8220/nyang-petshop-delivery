@@ -343,7 +343,7 @@
           <div class="stats" aria-label="게임 현황">
             <div class="stat"><small>오늘</small><strong id="dayValue">DAY 1</strong></div>
             <div class="stat"><small>보유금액</small><strong id="moneyValue">50냥</strong></div>
-            <div class="stat"><small>🐾 가게 평판</small><strong id="reputationValue">100 / 100</strong><progress id="reputationGauge" max="100" value="100" aria-label="가게 평판" style="width:100%;max-width:110px;height:8px;display:block"></progress></div>
+            <div class="stat"><small>🐾 가게 평판</small><strong id="reputationValue">100 / 100</strong></div>
             <div class="stat"><small>완료 주문</small><strong id="completedValue">0건</strong></div>
           </div>
         </header>
@@ -581,7 +581,6 @@
       document.getElementById("dayValue").textContent = `DAY ${state.day}`;
       document.getElementById("moneyValue").textContent = `${state.money}냥`;
       document.getElementById("reputationValue").textContent = `${state.reputation} / 100`;
-      document.getElementById("reputationGauge").value = state.reputation;
       document.getElementById("completedValue").textContent = `${state.stats.completedOrders}건`;
 
       document.getElementById("customerGrid").innerHTML = state.customerSlots.map((order, index) => {
