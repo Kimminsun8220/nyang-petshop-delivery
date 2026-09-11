@@ -773,6 +773,10 @@
       return progress >= difficulty.throwStart && progress <= difficulty.throwEnd;
     }
 
+    function houseProgress(target) {
+      return (target.y + 90) / (nightView.height + 180);
+    }
+
     function beginNight() {
       clearNightRuntime();
       state.phase = "night";
@@ -792,7 +796,6 @@
         obstacles: [],
         mode: "racing",
         raceLeft: 3.8,
-        deliveryElapsed: 0,
         difficulty: nightDifficulty(state.day),
         obstacleCooldown: 1.25 / nightDifficulty(state.day).frequency,
         invulnerableUntil: 0,
@@ -865,7 +868,7 @@
     function advanceDepartingHouses(dt) {
       const n = state.night;
       n.departingTargets.forEach(target => {
-        target.y += (nightView.height + 180) / 2.4 * dt;
+        target.y += n.difficulty.speed * dt;
         target.element.style.setProperty("--y", `${target.y}px`);
         target.element.style.setProperty("--approach-scale", `${.55 + .65 * (target.y + 90) / (nightView.height + 180)}`);
       });
@@ -877,7 +880,7 @@
       const target = state.night.currentTarget;
       if (!target || state.night.mode !== "delivery") return;
       const sameLane = state.night.lane === target.lane;
-      const progress = state.night.deliveryElapsed / 2.4;
+      const progress = houseProgress(target);
       const ready = sameLane && isThrowTiming(progress);
       const promptKey = `${target.orderId}:${sameLane}:${ready}`;
       if (state.night.promptKey === promptKey) return;
@@ -906,14 +909,13 @@
         return;
       }
       // Keep existing obstacles moving; wait for a completely clear house lane.
-      // Reserving the full lane also prevents the faster house catching an obstacle.
+      // Reserve the full lane so houses and obstacles never overlap.
       const safeLanes = [0, 2].filter(lane =>
         !state.night.obstacles.some(obstacle => obstacle.lane === lane) &&
         !state.night.departingTargets.some(house => house.lane === lane));
       if (!safeLanes.length) return;
       const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
       state.night.mode = "delivery";
-      state.night.deliveryElapsed = 0;
       const product = PRODUCTS[order.productId];
       const element = document.createElement("div");
       element.className = "road-object delivery-gate";
@@ -960,9 +962,8 @@
 
       const target = state.night.currentTarget;
       if (target && state.night.mode === "delivery") {
-        state.night.deliveryElapsed += dt;
-        const progress = state.night.deliveryElapsed / 2.4;
-        target.y = -90 + (roadHeight + 180) * Math.min(1, progress);
+        target.y += state.night.difficulty.speed * dt;
+        const progress = houseProgress(target);
         target.element.style.setProperty("--y", `${target.y}px`);
         target.element.style.setProperty("--approach-scale", `${.55 + .65 * Math.min(1, progress)}`);
         nightView.needle.style.transform = `translate3d(${Math.min(99, progress * 100)}%,0,0)`;
@@ -993,7 +994,7 @@
       if (!target || state.night.mode !== "delivery") return;
       if (state.night.lane !== target.lane) return;
       window.gameSound?.sfx("throw");
-      const progress = state.night.deliveryElapsed / 2.4;
+      const progress = houseProgress(target);
       const success = isThrowTiming(progress);
       if (success) {
         const road = document.getElementById("road"), van = document.getElementById("van");
@@ -1002,7 +1003,7 @@
         parcel.className = "parcel-flight"; parcel.textContent = "📦";
         const x = from.left - bounds.left + from.width / 2 - 17, y = from.top - bounds.top;
         parcel.style.left = `${x}px`; parcel.style.top = `${y}px`; road.appendChild(parcel);
-        const dx = to.left - bounds.left + to.width / 2 - 17 - x, dy = to.top - bounds.top - y + (nightView.height + 180) / 2.4 * .65;
+        const dx = to.left - bounds.left + to.width / 2 - 17 - x, dy = to.top - bounds.top - y + state.night.difficulty.speed * .65;
         const motion = parcel.animate(Array.from({length:21}, (_,i) => {const t=i/20;return {transform:`translate(${dx*t}px,${dy*t-130*4*t*(1-t)}px) rotate(${t*300}deg) scale(${1-t*.4})`,opacity:t===1?0:1};}),{duration:650,easing:"linear"});
         motion.onfinish = () => parcel.remove();
       }
