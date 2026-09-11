@@ -901,11 +901,13 @@
       const promptKey = `${target.orderId}:${sameLane}:${ready}`;
       state.night.promptKey = promptKey;
       const panel = document.querySelector(".timing-panel");
-      panel.classList.toggle("delivery-active", sameLane);
+      panel.classList.toggle("delivery-active", sameLane && progress <= state.night.difficulty.throwEnd);
       panel.classList.toggle("ready", ready);
       document.getElementById("throwButton").classList.toggle("ready", ready);
       const customer = getOrder(target.orderId);
-      document.getElementById("timingText").textContent = !sameLane
+      document.getElementById("timingText").textContent = progress > state.night.difficulty.throwEnd
+        ? "💨 배송 기회를 놓쳤어요. 다음 집을 준비하세요"
+        : !sameLane
         ? `${target.lane === 0 ? '◀ 왼쪽' : '오른쪽 ▶'} 집이 있는 차선으로 이동하세요`
         : ready ? "📦 지금 던져! SPACE / 던지기" : `🐱 ${customer.customerName}네 도착! 초록 구간에서 던져요`;
     }
@@ -986,7 +988,7 @@
         target.element.style.setProperty("--y", `${target.y}px`);
         nightView.needle.style.transform = `translate3d(${Math.min(99, progress * 100)}%,0,0)`;
         updateDeliveryPrompt();
-        if (progress >= 1) resolveTarget(target, false);
+        if (progress > state.night.difficulty.throwEnd) resolveTarget(target, false);
       }
 
       state.night.obstacles.forEach(obstacle => {
@@ -1206,8 +1208,7 @@
       result.delivered.forEach(order => lines.push(`✅ ${order.customerName} · ${PRODUCTS[order.productId].name} 배송 완료 (+${order.price}냥)`));
       result.delayed.forEach(order => lines.push(`⏰ ${order.customerName} · 같은 슬롯에 이월, 다음 밤이 마지막이에요`));
       result.cancelled.forEach(order => lines.push(`😾 ${order.customerName} · 주문 취소, 고객 보상금 -${order.penalty}냥`));
-      const reputationLoss = result.reputationBefore - result.reputationAfter;
-      lines.push(`🐾 주문 취소로 평판 -${reputationLoss} · ${result.reputationBefore} → ${result.reputationAfter} / 100`);
+      lines.push(`🐾 평판 ${result.reputationBefore} → ${result.reputationAfter}`);
       document.getElementById("resultList").innerHTML = lines.map(line => `<div>${line}</div>`).join("");
       document.getElementById("resultButton").textContent = result.bankrupt ? "최종 기록 보기" : `DAY ${state.day} 가게 열기`;
     }
