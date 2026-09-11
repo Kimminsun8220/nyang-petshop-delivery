@@ -1157,6 +1157,7 @@
     }
 
     function isBankrupt() {
+      if (state.money < 0) return true;
       const activeOrders = state.customerSlots.filter(Boolean);
       if (activeOrders.some(order => order.status === "ready")) return false;
       const canFinishOne = activeOrders.some(order => {
