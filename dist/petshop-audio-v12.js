@@ -47,6 +47,8 @@ window.gameSound = (() => {
     return sound;
   });
   let moveVoice = 0;
+  const moveBoosts = new Map();
+  const interactionBoost = 3;
   function applyVolume() {
     moveSounds.forEach(sound => { sound.volume = muted ? 0 : .65 * volume; });
     meow.volume = muted ? 0 : .65 * volume;
@@ -142,11 +144,19 @@ window.gameSound = (() => {
     if (muted || document.hidden) return;
     if (kind === 'move') {
       try {
+        unlock();
         const moveSound = moveSounds[moveVoice++ % moveSounds.length];
+        if (context && !moveBoosts.has(moveSound)) {
+          const source = context.createMediaElementSource(moveSound);
+          const boost = context.createGain();
+          boost.gain.value = interactionBoost;
+          source.connect(boost); boost.connect(context.destination);
+          moveBoosts.set(moveSound, { source, boost });
+        }
         moveSound.pause();
         moveSound.currentTime = .22;
         moveSound.play().catch(() => {
-          if (!muted && !document.hidden && context) tone(240,520,.11,.11,'sine');
+          if (!muted && !document.hidden && context) tone(240,520,.11,.11 * interactionBoost,'sine');
         });
       } catch (_) {}
       return;
@@ -163,7 +173,7 @@ window.gameSound = (() => {
     try {
       if (kind === 'hit') { tone(150,45,.28,.22,'triangle'); tone(75,38,.32,.16,'sine'); }
       else if (kind === 'throw') { tone(850,160,.24,.13,'triangle'); tone(420,1000,.13,.05,'sine'); }
-      else { tone(520,190,.19,.26,'sine'); tone(260,390,.10,.06,'triangle'); }
+      else { tone(520,190,.19,.26 * interactionBoost,'sine'); tone(260,390,.10,.06 * interactionBoost,'triangle'); }
     } catch (_) {}
   }
   document.addEventListener('click', event => {
