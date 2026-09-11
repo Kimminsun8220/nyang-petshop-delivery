@@ -343,6 +343,7 @@
           <div class="stats" aria-label="게임 현황">
             <div class="stat"><small>오늘</small><strong id="dayValue">DAY 1</strong></div>
             <div class="stat"><small>보유금액</small><strong id="moneyValue">50냥</strong></div>
+            <div class="stat"><small>🐾 가게 평판</small><strong id="reputationValue">100 / 100</strong><progress id="reputationGauge" max="100" value="100" aria-label="가게 평판" style="width:100%;max-width:110px;height:8px;display:block"></progress></div>
             <div class="stat"><small>완료 주문</small><strong id="completedValue">0건</strong></div>
           </div>
         </header>
@@ -480,6 +481,7 @@
         phase: "start",
         day: 1,
         money: 50,
+        reputation: 100,
         stats: { completedOrders: 0, totalRevenue: 0, cancelledOrders: 0, daysOperated: 0 },
         inventory: Object.fromEntries(Object.keys(MATERIALS).map(key => [key, 0])),
         customerSlots: [null, null, null],
@@ -542,12 +544,18 @@
       return "toy";
     }
 
+    function customerLimit() {
+      return state.reputation >= 70 ? 3 : state.reputation >= 40 ? 2 : state.reputation > 0 ? 1 : 0;
+    }
+
     function fillEmptySlots() {
       let added = 0;
+      let active = state.customerSlots.filter(Boolean).length;
       for (let i = 0; i < state.customerSlots.length; i += 1) {
-        if (!state.customerSlots[i]) {
+        if (!state.customerSlots[i] && active < customerLimit()) {
           state.customerSlots[i] = createOrder(i, chooseProductId());
           added += 1;
+          active += 1;
         }
       }
       return added;
@@ -572,6 +580,8 @@
     function renderDay() {
       document.getElementById("dayValue").textContent = `DAY ${state.day}`;
       document.getElementById("moneyValue").textContent = `${state.money}냥`;
+      document.getElementById("reputationValue").textContent = `${state.reputation} / 100`;
+      document.getElementById("reputationGauge").value = state.reputation;
       document.getElementById("completedValue").textContent = `${state.stats.completedOrders}건`;
 
       document.getElementById("customerGrid").innerHTML = state.customerSlots.map((order, index) => {
@@ -1017,6 +1027,7 @@
         state.stats.totalRevenue += order.price;
         state.night.delivered += 1;
         state.night.earnings += order.price;
+        state.reputation = Math.min(100, state.reputation + 3);
         showNightMessage(`✨ PERFECT! 배송 성공! +${order.price}냥`);
       } else if (order) {
         showNightMessage("💨 앗! 배송을 놓쳤어요!");
@@ -1122,6 +1133,7 @@
         order.missedNights += 1;
         if (order.missedNights >= 2) {
           state.money -= order.penalty;
+          state.reputation = Math.max(0, state.reputation - 10);
           state.stats.cancelledOrders += 1;
           result.penalties += order.penalty;
           result.cancelled.push(order);
@@ -1169,7 +1181,9 @@
       const result = state.lastResult;
       document.getElementById("resultTitle").textContent = `NIGHT ${result.day} 정산`;
       document.getElementById("resultLead").textContent = result.bankrupt
-        ? "보상금 정산 후 가게를 이어갈 자금이 부족해요."
+        ? (state.money >= 0 && state.reputation === 0 && !state.customerSlots.some(Boolean)
+          ? "손님들의 발길이 끊겼어요. 가게 영업을 마칩니다."
+          : "보상금 정산 후 가게를 이어갈 자금이 부족해요.")
         : `${result.newCustomers}개의 빈 슬롯에 새 고양이 손님이 찾아왔어요.`;
       document.getElementById("resultSummary").innerHTML = `
         <div class="result-box"><small>배송 성공</small><strong>${result.delivered.length}건</strong></div>
@@ -1179,7 +1193,8 @@
       result.delivered.forEach(order => lines.push(`✅ ${order.customerName} · ${PRODUCTS[order.productId].name} 배송 완료 (+${order.price}냥)`));
       result.delayed.forEach(order => lines.push(`⏰ ${order.customerName} · 같은 슬롯에 이월, 다음 밤이 마지막이에요`));
       result.cancelled.forEach(order => lines.push(`😾 ${order.customerName} · 주문 취소, 고객 보상금 -${order.penalty}냥`));
-      document.getElementById("resultList").innerHTML = lines.length ? lines.map(line => `<div>${line}</div>`).join("") : `<div>오늘 정산할 주문이 없어요.</div>`;
+      lines.push(`🐾 가게 평판 ${state.reputation}/100 · 배송 성공 건당 +3 (최대 100), 주문 취소 건당 -10 (최소 0)`);
+      document.getElementById("resultList").innerHTML = lines.map(line => `<div>${line}</div>`).join("");
       document.getElementById("resultButton").textContent = result.bankrupt ? "최종 기록 보기" : `DAY ${state.day} 가게 열기`;
     }
 
@@ -1199,6 +1214,8 @@
     }
 
     function renderGameOver() {
+      document.querySelector("#gameoverScreen h2").textContent = state.money >= 0 && state.reputation === 0 && !state.customerSlots.some(Boolean)
+        ? "영업 종료 · 손님들의 발길이 끊겼어요" : "GAME OVER";
       document.getElementById("finalStats").innerHTML = `
         <div class="result-box"><small>운영 일수</small><strong>${state.stats.daysOperated}일</strong></div>
         <div class="result-box"><small>완료 주문</small><strong>${state.stats.completedOrders}건</strong></div>
