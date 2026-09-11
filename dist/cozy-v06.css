@@ -137,6 +137,18 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.van::before,.van.hit::before{transform:none;animation:none}}
 
 /* Night settlement: return to the closed shop, not the daytime interior. */
+/* Rounded display lettering only; compact labels and body copy retain their typeface. */
+@font-face{font-family:'Petshop Jua';src:url('assets/Jua-Regular-v14.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+.start-card h1,.result-card h2,.section-title h2,.panel h2,.brand-text,
+.stat strong,.night-stat strong,.result-box strong,.transition-title,
+.primary-btn,.drive-btn,#throwButton,.collision-notice,
+.timing-panel.delivery-active #timingText{
+  font-family:'Petshop Jua','Malgun Gothic',sans-serif;
+  font-weight:400;
+  font-synthesis:none;
+  letter-spacing:.01em;
+}
+.start-card h1{letter-spacing:0}
 .sound-toggle{position:fixed;z-index:1000;right:12px;bottom:12px;min-height:40px;padding:8px 12px;border:2px solid #ba936b;border-radius:16px;background:#fff3de;color:#694b35;font-size:14px;font-weight:800;box-shadow:0 3px 10px #34253d40;cursor:pointer}
 .sound-toggle:focus-visible{outline:3px solid #694b35;outline-offset:3px}
 .collision-notice{position:absolute;z-index:40;top:16px;left:50%;transform:translateX(-50%);width:max-content;max-width:90%;padding:12px 18px;border-radius:16px;background:#fff0d8;color:#983819;border:3px solid #db743f;font-size:18px;font-weight:900;text-align:center;pointer-events:none;box-shadow:0 5px 15px #3a213c55}
