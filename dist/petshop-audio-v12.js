@@ -40,11 +40,15 @@ window.gameSound = (() => {
   const meow = new Audio('assets/meow-v28.mp3');
   meow.preload = 'auto';
   meow.volume = .65 * volume;
-  const moveSound = new Audio('assets/move-whoosh-v40.mp3');
-  moveSound.preload = 'auto';
-  moveSound.volume = .45 * volume;
+  const moveSounds = Array.from({ length: 4 }, () => {
+    const sound = new Audio('assets/move-whoosh-v40.mp3');
+    sound.preload = 'auto';
+    sound.volume = .65 * volume;
+    return sound;
+  });
+  let moveVoice = 0;
   function applyVolume() {
-    moveSound.volume = muted ? 0 : .45 * volume;
+    moveSounds.forEach(sound => { sound.volume = muted ? 0 : .65 * volume; });
     meow.volume = muted ? 0 : .65 * volume;
     dayMusic.volume = muted ? 0 : .45 * volume;
     nightMusic.volume = muted ? 0 : .45 * volume;
@@ -100,8 +104,7 @@ window.gameSound = (() => {
     }
   }
   function silence() {
-    moveSound.pause();
-    moveSound.currentTime = 0;
+    moveSounds.forEach(sound => { sound.pause(); sound.currentTime = 0; });
     nightMusic.pause();
     audioHint();
     dayMusic.pause();
@@ -139,9 +142,12 @@ window.gameSound = (() => {
     if (muted || document.hidden) return;
     if (kind === 'move') {
       try {
+        const moveSound = moveSounds[moveVoice++ % moveSounds.length];
         moveSound.pause();
-        moveSound.currentTime = 0;
-        moveSound.play().catch(() => {});
+        moveSound.currentTime = .22;
+        moveSound.play().catch(() => {
+          if (!muted && !document.hidden && context) tone(240,520,.11,.11,'sine');
+        });
       } catch (_) {}
       return;
     }
