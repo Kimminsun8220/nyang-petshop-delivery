@@ -759,6 +759,20 @@
       nightTimers.push(setTimeout(beginNight, 1350));
     }
 
+    function nightDifficulty(day) {
+      return {
+        frequency: day >= 5 ? 1.4 : 1.2,
+        speed: 195 * (day >= 3 ? 1.15 : 1),
+        throwStart: day >= 3 ? .415 : .38,
+        throwEnd: day >= 3 ? .665 : .70
+      };
+    }
+
+    function isThrowTiming(progress) {
+      const difficulty = state.night.difficulty;
+      return progress >= difficulty.throwStart && progress <= difficulty.throwEnd;
+    }
+
     function beginNight() {
       clearNightRuntime();
       state.phase = "night";
@@ -779,12 +793,17 @@
         mode: "racing",
         raceLeft: 3.8,
         deliveryElapsed: 0,
-        obstacleCooldown: 1.25,
+        difficulty: nightDifficulty(state.day),
+        obstacleCooldown: 1.25 / nightDifficulty(state.day).frequency,
         invulnerableUntil: 0,
         ending: false,
         lastFrame: performance.now()
       };
       document.getElementById("nightObjects").innerHTML = "";
+      const timingZone = document.querySelector(".timing-zone");
+      const difficulty = state.night.difficulty;
+      timingZone.style.left = `${difficulty.throwStart * 100}%`;
+      timingZone.style.width = `${(difficulty.throwEnd - difficulty.throwStart) * 100}%`;
       document.getElementById("nightMessage").textContent = "";
       document.getElementById("nightMessage").classList.remove("show");
       document.getElementById("van").style.setProperty("--lane", 1);
@@ -830,7 +849,7 @@
 
     function renderNightMotion(dt) {
       const n = state.night, v = nightView;
-      n.distance += 195 * dt;
+      n.distance += n.difficulty.speed * dt;
       n.visualLane += (n.lane - n.visualLane) * (1 - Math.exp(-18 * dt));
       v.van.style.setProperty("--van-x", `${n.visualLane * v.width / 3}px`);
       v.road.style.setProperty("--road-scroll", `${n.distance % 88}px`);
@@ -859,7 +878,7 @@
       if (!target || state.night.mode !== "delivery") return;
       const sameLane = state.night.lane === target.lane;
       const progress = state.night.deliveryElapsed / 2.4;
-      const ready = sameLane && progress >= .38 && progress <= .70;
+      const ready = sameLane && isThrowTiming(progress);
       const promptKey = `${target.orderId}:${sameLane}:${ready}`;
       if (state.night.promptKey === promptKey) return;
       state.night.promptKey = promptKey;
@@ -918,7 +937,7 @@
       element.style.setProperty("--lane", lane);
       element.textContent = OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
       document.getElementById("nightObjects").appendChild(element);
-      state.night.obstacles.push({ lane, y: -75, speed: 195, element, hit: false });
+      state.night.obstacles.push({ lane, y: -75, speed: state.night.difficulty.speed, element, hit: false });
     }
 
     function updateNight(now) {
@@ -934,7 +953,7 @@
         if (state.night.raceLeft <= 0) spawnTarget();
         else if (state.night.obstacleCooldown <= 0) {
           spawnObstacle();
-          state.night.obstacleCooldown = .85 + Math.random() * .2;
+          state.night.obstacleCooldown = (.85 + Math.random() * .2) / state.night.difficulty.frequency;
         }
       }
       const roadHeight = nightView.height;
@@ -975,7 +994,7 @@
       if (state.night.lane !== target.lane) return;
       window.gameSound?.sfx("throw");
       const progress = state.night.deliveryElapsed / 2.4;
-      const success = progress >= .38 && progress <= .70;
+      const success = isThrowTiming(progress);
       if (success) {
         const road = document.getElementById("road"), van = document.getElementById("van");
         const bounds = road.getBoundingClientRect(), from = van.getBoundingClientRect(), to = target.element.getBoundingClientRect();
@@ -1008,7 +1027,7 @@
       state.night.currentTarget = null;
       state.night.mode = "racing";
       state.night.raceLeft = 4.2;
-      state.night.obstacleCooldown = .8;
+      state.night.obstacleCooldown = .8 / state.night.difficulty.frequency;
       document.getElementById("throwButton").classList.remove("ready");
       document.querySelector(".timing-panel").classList.remove("delivery-active", "ready");
       document.getElementById("timingText").textContent = "🏁 다시 출발! 다음 집까지 장애물을 피하세요";
