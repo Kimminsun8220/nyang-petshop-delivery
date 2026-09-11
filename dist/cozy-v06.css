@@ -94,8 +94,13 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .transition-title{color:#fff0d4;font-size:clamp(28px,5vw,48px)}.transition-copy{color:#ffe0a7}
 /* Atlas source is 1254px square; use the illustrated row bounds, not its empty margins. */
 .cat-face{width:76px;height:109px;top:8px;background-size:400% 278.667%;background-position:0 22.388%}
-.customer-card:nth-child(2) .cat-face{background-position:33.333333% 22.388%}
-.customer-card:nth-child(3) .cat-face{background-position:66.666667% 22.388%}
+.customer-card:nth-child(2) .cat-face{background-position:33.333333% 22.388%;clip-path:inset(0 0 0 3%)}
+.customer-card:nth-child(3) .cat-face{background-position:66.666667% 22.388%;clip-path:inset(0 8% 0 0)}
+/* Let the copy occupy its real height instead of overflowing into the bag. */
+.craft-panel .craft-empty{height:auto!important;max-height:none;min-height:125px;padding:12px 6px 18px;line-height:1.5}
+.craft-panel .craft-empty span{display:inline-block;font-size:38px!important;margin-bottom:8px}
+.craft-panel .craft-empty small{display:inline-block;margin-top:6px}
+.craft-panel .craft-empty + .inventory-box{margin-top:10px}
 .logo-cat{width:105px;height:150px;background-size:400% 278.667%;background-position:0 22.388%}
 .delivery-gate .gate-cat{width:78px;height:112px;background-size:400% 278.667%;background-position:100% 22.388%}
 .van::before{width:64px;height:84px;background-size:400% 305.854%;background-position:0 79.384%}
