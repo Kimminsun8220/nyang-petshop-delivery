@@ -488,6 +488,7 @@
         reputation: 100,
         stats: { completedOrders: 0, totalRevenue: 0, cancelledOrders: 0, daysOperated: 0 },
         inventory: Object.fromEntries(Object.keys(MATERIALS).map(key => [key, 0])),
+        inventoryDates: Object.fromEntries(Object.keys(MATERIALS).map(key => [key, []])),
         customerSlots: [null, null, null],
         selectedOrderId: null,
         orderSequence: 0,
@@ -670,9 +671,12 @@
     function inventoryMarkup(expectedMaterialKey) {
       const owned = Object.entries(MATERIALS).filter(([key]) => state.inventory[key] > 0);
       const contents = owned.length
-        ? owned.map(([key, item]) => `<button class="inventory-btn ${key === expectedMaterialKey ? 'next' : ''}" type="button" data-material="${key}" onclick="useMaterial('${key}')">${item.icon} ${item.name} ×${state.inventory[key]}</button>`).join("")
+        ? owned.map(([key, item]) => {
+          const expiring = state.inventoryDates[key].filter(day => state.day - day >= 1).length;
+          return `<button class="inventory-btn ${key === expectedMaterialKey ? 'next' : ''}" type="button" data-material="${key}" onclick="useMaterial('${key}')">${item.icon} ${item.name} ×${state.inventory[key]}<small style="display:block;color:${expiring ? '#a34027' : '#776454'}">${expiring ? `⚠ ${expiring}개 오늘까지` : '내일까지 사용 가능'}</small></button>`;
+        }).join("")
         : `<div class="inventory-empty">가방이 비어 있어요! 상점에서 재료를 구매해보세요 🛒</div>`;
-      return `<section class="inventory-box" aria-label="내 인벤토리"><div class="inventory-title"><span>🎒 내 인벤토리</span><small>재료를 눌러 조합대에 넣기</small></div><div class="inventory-row">${contents}</div></section>`;
+      return `<section class="inventory-box" aria-label="내 인벤토리"><div class="inventory-title"><span>🎒 내 인벤토리</span><small>구매 다음 날까지 사용 · 오래된 재료부터 투입</small></div><div class="inventory-row">${contents}</div></section>`;
     }
 
     function selectOrder(orderId) {
@@ -692,6 +696,7 @@
       }
       state.money -= material.price;
       state.inventory[materialKey] += 1;
+      state.inventoryDates[materialKey].push(state.day);
       renderDay();
       flashInventory();
       showToast(`${material.icon} ${material.name}을 샀어요! 내 인벤토리에 +1`);
@@ -721,6 +726,7 @@
         return;
       }
       state.inventory[materialKey] -= 1;
+      state.inventoryDates[materialKey].shift();
       order.craftStep += 1;
       order.status = order.craftStep === product.recipe.length ? "ready" : "crafting";
       renderDay();
@@ -1132,6 +1138,19 @@
       settleNight();
     }
 
+    function expireMaterials(nextDay) {
+      const discarded = [];
+      Object.keys(MATERIALS).forEach(key => {
+        const dates = state.inventoryDates[key];
+        const fresh = dates.filter(day => nextDay - day < 2);
+        const count = dates.length - fresh.length;
+        state.inventoryDates[key] = fresh;
+        state.inventory[key] = fresh.length;
+        if (count) discarded.push({ key, count, reason: ["fish", "nutrition"].includes(key) ? "부패" : "파손" });
+      });
+      return discarded;
+    }
+
     function settleNight() {
       const completedDay = state.day;
       const result = { day: completedDay, delivered: [], delayed: [], cancelled: [], penalties: 0, newCustomers: 0, bankrupt: false };
@@ -1160,6 +1179,7 @@
       state.stats.daysOperated = completedDay;
       result.reputationAfter = state.reputation;
       state.day += 1;
+      result.discarded = expireMaterials(state.day);
       result.newCustomers = fillEmptySlots();
       result.bankrupt = isBankrupt();
       state.lastResult = result;
@@ -1198,7 +1218,7 @@
       document.getElementById("resultLead").textContent = result.bankrupt
         ? (state.money >= 0 && state.reputation === 0 && !state.customerSlots.some(Boolean)
           ? "손님들의 발길이 끊겼어요. 가게 영업을 마칩니다."
-          : "보상금 정산 후 가게를 이어갈 자금이 부족해요.")
+          : "정산 후 남은 돈과 재료로 영업을 이어가기 어려워요.")
         : `${result.newCustomers}개의 빈 슬롯에 새 고양이 손님이 찾아왔어요.`;
       document.getElementById("resultSummary").innerHTML = `
         <div class="result-box"><small>배송 성공</small><strong>${result.delivered.length}건</strong></div>
@@ -1209,6 +1229,7 @@
       result.delayed.forEach(order => lines.push(`⏰ ${order.customerName} · 같은 슬롯에 이월, 다음 밤이 마지막이에요`));
       result.cancelled.forEach(order => lines.push(`😾 ${order.customerName} · 주문 취소, 고객 보상금 -${order.penalty}냥`));
       lines.push(`🐾 평판 ${result.reputationBefore} → ${result.reputationAfter}`);
+      result.discarded.forEach(({ key, count, reason }) => lines.push(`🗑️ ${MATERIALS[key].icon} ${MATERIALS[key].name} ×${count} · ${reason}으로 자동 폐기`));
       document.getElementById("resultList").innerHTML = lines.map(line => `<div>${line}</div>`).join("");
       document.getElementById("resultButton").textContent = result.bankrupt ? "최종 기록 보기" : `DAY ${state.day} 가게 열기`;
     }
