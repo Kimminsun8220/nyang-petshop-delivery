@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=39">
+  <link rel="stylesheet" href="cozy-v06.css?v=44">
 </head>
 <body>
   <main>
@@ -474,7 +474,16 @@
       tower: { name: "캣타워", icon: "🏰", recipe: ["wood", "wood", "fabric", "feather", "box"], price: 60, penalty: 18, speech: "캣타워 갖고 싶다냥!" }
     };
 
-    const CUSTOMER_NAMES = ["나비", "치즈", "콩이", "모찌", "보리", "후추", "두부", "구름", "단추"];
+    const CAT_TYPES = [
+      { id: "blue", label: "러시안 블루", names: ["블루", "은비", "하루"] },
+      { id: "orange", label: "치즈냥이", names: ["치즈", "나비", "보리"] },
+      { id: "calico", label: "삼색냥이", names: ["나비", "모모", "단풍"] },
+      { id: "tortie", label: "카오스냥이", names: ["코코", "모카", "브라우니"] },
+      { id: "tuxedo", label: "턱시도냥이", names: ["까미", "오레오", "콩이"] },
+      { id: "white", label: "흰고양이", names: ["두부", "모찌", "구름", "솜이"] },
+      { id: "black", label: "까만 고양이", names: ["밤이", "깜장", "까망이"] },
+      { id: "tabby", label: "회색 줄무늬", names: ["후추", "고등어", "호두"] }
+    ];
     const OBSTACLES = ["🚗", "🚧", "🕳️"];
     const SCREEN_IDS = ["startScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
 
@@ -539,8 +548,10 @@
 
     function createOrder(slotIndex, productId) {
       const usedNames = state.customerSlots.filter(Boolean).map(order => order.customerName);
-      const availableNames = CUSTOMER_NAMES.filter(name => !usedNames.includes(name));
-      const names = availableNames.length ? availableNames : CUSTOMER_NAMES;
+      const usedTypes = new Set(state.customerSlots.filter(Boolean).map(order => order.catType));
+      const availableTypes = CAT_TYPES.filter(cat => !usedTypes.has(cat.id));
+      const cat = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+      const names = cat.names.filter(name => !usedNames.includes(name));
       const customerName = names[Math.floor(Math.random() * names.length)];
       const product = PRODUCTS[productId];
       state.orderSequence += 1;
@@ -548,6 +559,7 @@
         id: `${state.day}-${state.orderSequence}`,
         slotIndex,
         customerName,
+        catType: cat.id,
         productId,
         price: product.price,
         penalty: product.penalty,
@@ -592,6 +604,14 @@
       return order.missedNights > 0 ? "😐" : "😺";
     }
 
+    function customerPortrait(order) {
+      const index = CAT_TYPES.findIndex(cat => cat.id === order.catType);
+      const cat = CAT_TYPES[index];
+      const column = index % 4;
+      const row = Math.floor(index / 4) + (order.missedNights > 0 ? 2 : 0);
+      return `<div class="cat-face cat-portrait" role="img" aria-label="${cat.label}${order.missedNights > 0 ? ' · 슬픈 표정' : ''}" style="--cat-x:${column * 100 / 3}%;--cat-y:${row * 100 / 3}%"></div>`;
+    }
+
     function orderStatus(order) {
       if (order.status === "ready" && order.missedNights > 0) return { label: "배송 지연 · 마지막 밤", cls: "warning" };
       if (order.status === "ready") return { label: "배송 대기", cls: "ready" };
@@ -615,7 +635,7 @@
         return `
           <article class="customer-card${selected}${delayed}" onclick="selectOrder('${order.id}')" tabindex="0" role="button" aria-label="${order.customerName}의 ${product.name} 주문 선택">
             <div class="customer-head">
-              <div class="cat-face">${orderFace(order)}</div>
+              ${customerPortrait(order)}
               <div><div class="customer-name">${order.customerName}</div><small>고객 슬롯 ${index + 1}</small></div>
             </div>
             <div class="speech">“${product.speech}”</div>

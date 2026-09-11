@@ -99,6 +99,9 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .cat-face{width:76px;height:109px;top:8px;background-size:400% 278.667%;background-position:0 22.388%}
 .customer-card:nth-child(2) .cat-face{background-position:33.333333% 22.388%;clip-path:inset(0 0 0 3%)}
 .customer-card:nth-child(3) .cat-face{background-position:66.666667% 22.388%;clip-path:inset(0 8% 0 0)}
+/* Customer identity, not slot position, selects the approved portrait. */
+.customer-card .cat-face.cat-portrait{width:81px;height:108px;left:7px;top:8px;background-image:url('assets/customer-cats-v44.png');background-size:400% 400%;background-position:var(--cat-x) var(--cat-y);background-repeat:no-repeat;clip-path:none;filter:none}
+.customer-card.delayed .cat-face.cat-portrait::after{content:none}
 /* Let the copy occupy its real height instead of overflowing into the bag. */
 .craft-panel .craft-empty{height:auto!important;max-height:none;min-height:125px;padding:12px 6px 18px;line-height:1.5}
 .craft-panel .craft-empty span{display:inline-block;font-size:38px!important;margin-bottom:8px}
