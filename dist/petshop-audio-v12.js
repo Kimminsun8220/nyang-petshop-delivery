@@ -4,6 +4,8 @@ window.gameSound = (() => {
   let volume = .8;
   const voices = new Set();
   const musicVoices = new Set();
+  // Bring the quiet interlude closer to the recorded day/night tracks.
+  const interludeBoost = 3;
   let dayScene = true;
   let nightScene = false;
   const nightMusic = new Audio('assets/night-music-v34.mp3');
@@ -72,7 +74,7 @@ window.gameSound = (() => {
     oscillator.frequency.setValueAtTime(from, when);
     oscillator.frequency.exponentialRampToValueAtTime(to, when + duration);
     gain.gain.setValueAtTime(0, when);
-    gain.gain.linearRampToValueAtTime(volume, when + .015);
+    gain.gain.linearRampToValueAtTime(volume * (music ? interludeBoost : 1), when + .015);
     gain.gain.exponentialRampToValueAtTime(.0001, when + duration);
     oscillator.connect(gain); gain.connect(master);
     voices.add(oscillator);
