@@ -1121,6 +1121,7 @@
     function settleNight() {
       const completedDay = state.day;
       const result = { day: completedDay, delivered: [], delayed: [], cancelled: [], penalties: 0, newCustomers: 0, bankrupt: false };
+      result.reputationBefore = state.reputation;
 
       state.customerSlots.forEach((order, index) => {
         if (!order) return;
@@ -1143,6 +1144,7 @@
       });
 
       state.stats.daysOperated = completedDay;
+      result.reputationAfter = state.reputation;
       state.day += 1;
       result.newCustomers = fillEmptySlots();
       result.bankrupt = isBankrupt();
@@ -1192,7 +1194,9 @@
       result.delivered.forEach(order => lines.push(`✅ ${order.customerName} · ${PRODUCTS[order.productId].name} 배송 완료 (+${order.price}냥)`));
       result.delayed.forEach(order => lines.push(`⏰ ${order.customerName} · 같은 슬롯에 이월, 다음 밤이 마지막이에요`));
       result.cancelled.forEach(order => lines.push(`😾 ${order.customerName} · 주문 취소, 고객 보상금 -${order.penalty}냥`));
-      lines.push(`🐾 가게 평판 ${state.reputation}/100 · 배송 성공 건당 +3 (최대 100), 주문 취소 건당 -10 (최소 0)`);
+      const reputationLoss = result.reputationBefore - result.reputationAfter;
+      lines.push(`🐾 주문 취소로 평판 -${reputationLoss} · ${result.reputationBefore} → ${result.reputationAfter} / 100`);
+      lines.push(`평판 규칙: 배송 성공 건당 +3 (최대 100), 주문 취소 건당 -10 (최소 0)`);
       document.getElementById("resultList").innerHTML = lines.map(line => `<div>${line}</div>`).join("");
       document.getElementById("resultButton").textContent = result.bankrupt ? "최종 기록 보기" : `DAY ${state.day} 가게 열기`;
     }
