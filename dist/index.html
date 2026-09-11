@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=48">
+  <link rel="stylesheet" href="cozy-v06.css?v=49">
 </head>
 <body>
   <main>
@@ -706,10 +706,8 @@
       }
       const product = PRODUCTS[order.productId];
       const ready = order.status === 'ready';
-      const stocked = needs.every(item => item.missing === 0);
       memo.innerHTML = `<strong>${product.icon} ${order.customerName} · ${product.name}</strong>
-        ${ready ? '<p>✨ 이미 완성했어요! 배송 대기 중이에요.</p>' : `<ul>${needs.map(({key, missing}) => `<li>${MATERIALS[key].icon} ${MATERIALS[key].name}: <b class="${missing ? 'missing' : 'stocked'}">${missing ? `${missing}개 더 필요` : '✓ 준비 완료'}</b></li>`).join('')}</ul>`}
-        <button type="button" onclick="setDayPane('craft')">${ready ? '배송 대기 확인' : stocked ? '재료 준비 완료 · 조합대로' : '조합대 확인'} →</button>`;
+        ${ready ? '<p>✨ 이미 완성했어요! 배송 대기 중이에요.</p>' : `<ul>${needs.map(({key, missing}) => `<li>${MATERIALS[key].icon} ${MATERIALS[key].name}: <b class="${missing ? 'missing' : 'stocked'}">${missing ? `${missing}개 더 필요` : '✓ 준비 완료'}</b></li>`).join('')}</ul>`}`;
     }
 
     function renderCraftPanel() {
