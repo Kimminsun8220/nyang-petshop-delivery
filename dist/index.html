@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=38">
+  <link rel="stylesheet" href="cozy-v06.css?v=39">
 </head>
 <body>
   <main>
@@ -369,10 +369,10 @@
               <div id="shopGrid" class="shop-grid"></div>
             </section>
 
-            <section class="panel" aria-labelledby="recipeBookTitle">
-              <h2 id="recipeBookTitle">📖 레시피북</h2>
+            <details class="panel recipe-drawer">
+              <summary id="recipeBookTitle">📖 레시피북</summary>
               <div id="recipeBook" class="recipe-book"></div>
-            </section>
+            </details>
           </div>
 
           <div>
@@ -1322,6 +1322,6 @@
     <button id="soundToggle" class="speaker-icon" type="button" aria-expanded="false" aria-controls="volumePanel" aria-label="소리 켜짐 · 볼륨 조절 열기">🔊</button>
   </div>
   <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
-<script src="petshop-audio-v12.js?v=36"></script>
+<script src="petshop-audio-v12.js?v=40"></script>
 </body>
 </html>
