@@ -1306,11 +1306,15 @@
 
     state = freshState();
   </script>
-  <div class="sound-toggle" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:calc(100vw - 24px)">
-    <button id="soundToggle" type="button" aria-pressed="true" aria-label="음악과 효과음 끄기" style="border:0;background:transparent;color:inherit;font:inherit;cursor:pointer">🔊 소리 켜짐</button>
+  <div id="soundControl" class="sound-toggle">
+    <div id="volumePanel" hidden style="position:absolute;right:0;bottom:calc(100% + 10px);padding:12px;background:#fff3de;border:2px solid #ba936b;border-radius:14px;white-space:nowrap;box-shadow:0 3px 10px #34253d40">
+    <button id="soundMute" class="speaker-icon" type="button" aria-label="음소거" aria-pressed="false">🔊</button>
     <input id="soundVolume" type="range" min="0" max="100" value="80" aria-label="전체 소리 볼륨" style="width:90px;accent-color:#b87855">
     <span id="volumeValue" style="min-width:36px;font-size:12px">80%</span>
+    </div>
+    <button id="soundToggle" class="speaker-icon" type="button" aria-expanded="false" aria-controls="volumePanel" aria-label="소리 켜짐 · 볼륨 조절 열기">🔊</button>
   </div>
-  <script src="petshop-audio-v12.js?v=29"></script>
+  <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
+  <script src="petshop-audio-v12.js?v=30"></script>
 </body>
 </html>

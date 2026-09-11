@@ -14,6 +14,7 @@ window.gameSound = (() => {
   document.getElementById('soundVolume').addEventListener('input', event => {
     volume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
     applyVolume();
+    label();
     unlock();
   });
   const melody = [72,76,79,76,74,0,71,67,69,72,76,72,67,0,64,67,
@@ -23,9 +24,13 @@ window.gameSound = (() => {
   function label() {
     const button = document.getElementById('soundToggle');
     if (!button) return;
-    button.textContent = muted ? '🔇 소리 꺼짐' : '🔊 소리 켜짐';
-    button.setAttribute('aria-pressed', String(!muted));
-    button.setAttribute('aria-label', muted ? '음악과 효과음 켜기' : '음악과 효과음 끄기');
+    const silent = muted || volume === 0;
+    button.classList.toggle('is-muted', silent);
+    button.setAttribute('aria-label', `${silent ? '음소거' : '소리 켜짐'} · 볼륨 조절`);
+    const muteButton = document.getElementById('soundMute');
+    muteButton.classList.toggle('is-muted', silent);
+    muteButton.setAttribute('aria-pressed', String(muted));
+    muteButton.setAttribute('aria-label', muted ? '음소거 해제' : '음소거');
   }
   function tone(from, to, duration, volume, type = 'sine', when = context.currentTime) {
     const oscillator = context.createOscillator(), gain = context.createGain();
@@ -97,9 +102,19 @@ window.gameSound = (() => {
     } catch (_) {}
   }
   document.addEventListener('click', event => {
+    const panel = document.getElementById('volumePanel');
+    if (!event.target.closest('#soundControl')) {
+      panel.hidden = true;
+      document.getElementById('soundToggle').setAttribute('aria-expanded', 'false');
+    }
     const button = event.target.closest('button,[role="button"]');
     if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
     if (button.id === 'soundToggle') {
+      panel.hidden = !panel.hidden;
+      button.setAttribute('aria-expanded', String(!panel.hidden));
+      return;
+    }
+    if (button.id === 'soundMute') {
       muted = !muted; label(); applyVolume();
       if (muted) silence(); else { unlock(); sfx('click'); }
       return;
@@ -108,6 +123,11 @@ window.gameSound = (() => {
     if (!button.matches('.drive-btn,#throwButton,.mascot-cat,.customer-card')) sfx('click');
   }, true);
   document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !document.getElementById('volumePanel').hidden) {
+      document.getElementById('volumePanel').hidden = true;
+      document.getElementById('soundToggle').setAttribute('aria-expanded', 'false');
+      document.getElementById('soundToggle').focus();
+    }
     if (!event.repeat && ['ArrowLeft','ArrowRight','a','A','d','D','Enter',' '].includes(event.key)) unlock();
   }, true);
   document.addEventListener('visibilitychange', () => {
