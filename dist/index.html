@@ -327,7 +327,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=52">
+  <link rel="stylesheet" href="cozy-v06.css?v=53">
 </head>
 <body>
   <main>
@@ -859,6 +859,8 @@
       nightTimers.push(setTimeout(beginNight, 1350));
     }
 
+    // Gameplay distances are independent of CSS pixels and viewport height.
+    const NIGHT_ROAD_HEIGHT = 520;
     function nightDifficulty(day) {
       return {
         frequency: day >= 5 ? 1.4 : 1.2,
@@ -874,7 +876,7 @@
     }
 
     function houseProgress(target) {
-      return (target.y + 90) / (nightView.height + 180);
+      return (target.y + 90) / (NIGHT_ROAD_HEIGHT + 180);
     }
 
     function beginNight() {
@@ -889,6 +891,7 @@
         delivered: 0,
         earnings: 0,
         currentTarget: null,
+        nextHouseLane: Math.random() < .5 ? 0 : 2,
         departingTargets: [],
         distance: 0,
         visualLane: 1,
@@ -948,6 +951,17 @@
       if (!nightView) return;
       nightView.width = nightView.road.clientWidth;
       nightView.height = nightView.road.clientHeight;
+      nightView.scaleY = nightView.height / NIGHT_ROAD_HEIGHT;
+      nightView.road.style.setProperty("--race-scale", nightView.scaleY);
+      if (state?.night) {
+        const n = state.night;
+        [...n.obstacles, ...n.departingTargets, n.currentTarget].filter(Boolean).forEach(positionRoadObject);
+        renderNightMotion(0);
+      }
+    }
+
+    function positionRoadObject(item) {
+      item.element.style.setProperty("--y", `${item.y * nightView.scaleY}px`);
     }
 
     function renderNightMotion(dt) {
@@ -955,7 +969,7 @@
       n.distance += n.difficulty.speed * dt;
       n.visualLane += (n.lane - n.visualLane) * (1 - Math.exp(-18 * dt));
       v.van.style.setProperty("--van-x", `${n.visualLane * v.width / 3}px`);
-      v.road.style.setProperty("--road-scroll", `${n.distance % 88}px`);
+      v.road.style.setProperty("--road-scroll", `${(n.distance * v.scaleY) % 88}px`);
       const bob = v.reducedMotion ? 0 : Math.sin(n.distance / 15) * 1.3;
       const lean = v.reducedMotion ? 0 : (n.lane - n.visualLane) * 9;
       v.van.style.setProperty("--body-bob", `${bob}px`);
@@ -969,10 +983,10 @@
       const n = state.night;
       n.departingTargets.forEach(target => {
         target.y += n.difficulty.speed * dt;
-        target.element.style.setProperty("--y", `${target.y}px`);
+        positionRoadObject(target);
       });
-      n.departingTargets.filter(target => target.y > nightView.height + 100).forEach(removeRoadObject);
-      n.departingTargets = n.departingTargets.filter(target => target.y <= nightView.height + 100);
+      n.departingTargets.filter(target => target.y > NIGHT_ROAD_HEIGHT + 100).forEach(removeRoadObject);
+      n.departingTargets = n.departingTargets.filter(target => target.y <= NIGHT_ROAD_HEIGHT + 100);
     }
 
     function updateDeliveryPrompt() {
@@ -1019,11 +1033,11 @@
       }
       // Keep existing obstacles moving; wait for a completely clear house lane.
       // Reserve the full lane so houses and obstacles never overlap.
-      const safeLanes = [0, 2].filter(lane =>
+      const safeLanes = [state.night.nextHouseLane].filter(lane =>
         !state.night.obstacles.some(obstacle => obstacle.lane === lane) &&
         !state.night.departingTargets.some(house => house.lane === lane));
       if (!safeLanes.length) return;
-      const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
+      const lane = safeLanes[0];
       state.night.mode = "delivery";
       const product = PRODUCTS[order.productId];
       const element = document.createElement("div");
@@ -1032,14 +1046,14 @@
       element.innerHTML = `<span class="gate-cat" aria-hidden="true">🏠</span><span class="gate-label"><span>${order.customerName}네</span><span>${product.icon} 배송지</span></span>`;
       document.getElementById("nightObjects").appendChild(element);
       const y = -90;
-      element.style.setProperty("--y", `${y}px`);
       state.night.currentTarget = { orderId, lane, y, element };
+      positionRoadObject(state.night.currentTarget);
       updateDeliveryPrompt();
     }
 
     function spawnObstacle() {
       const houses = [...state.night.departingTargets, state.night.currentTarget].filter(Boolean);
-      const lanes = [0, 1, 2].filter(lane => !houses.some(house => house.lane === lane));
+      const lanes = [0, 1, 2].filter(lane => lane !== state.night.nextHouseLane && !houses.some(house => house.lane === lane));
       if (!lanes.length) return;
       const lane = lanes[Math.floor(Math.random() * lanes.length)];
       const element = document.createElement("div");
@@ -1048,6 +1062,7 @@
       element.textContent = OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
       document.getElementById("nightObjects").appendChild(element);
       state.night.obstacles.push({ lane, y: -75, speed: state.night.difficulty.speed, element, hit: false });
+      positionRoadObject(state.night.obstacles.at(-1));
     }
 
     function updateNight(now) {
@@ -1066,13 +1081,13 @@
           state.night.obstacleCooldown = (.85 + Math.random() * .2) / state.night.difficulty.frequency;
         }
       }
-      const roadHeight = nightView.height;
+      const roadHeight = NIGHT_ROAD_HEIGHT;
 
       const target = state.night.currentTarget;
       if (target && state.night.mode === "delivery") {
         target.y += state.night.difficulty.speed * dt;
         const progress = houseProgress(target);
-        target.element.style.setProperty("--y", `${target.y}px`);
+        positionRoadObject(target);
         nightView.needle.style.transform = `translate3d(${Math.min(99, progress * 100)}%,0,0)`;
         updateDeliveryPrompt();
         if (progress > state.night.difficulty.throwEnd) resolveTarget(target, false);
@@ -1080,7 +1095,7 @@
 
       state.night.obstacles.forEach(obstacle => {
         obstacle.y += obstacle.speed * dt;
-        obstacle.element.style.setProperty("--y", `${obstacle.y}px`);
+        positionRoadObject(obstacle);
         // The van eases between lanes: test its rendered body, not its destination lane.
         if (!state.night.ending && !obstacle.hit && obstacleTouchesVan(obstacle)) hitObstacle(obstacle, now);
       });
@@ -1110,7 +1125,7 @@
         parcel.className = "parcel-flight"; parcel.textContent = "📦";
         const x = from.left - bounds.left + from.width / 2 - 17, y = from.top - bounds.top;
         parcel.style.left = `${x}px`; parcel.style.top = `${y}px`; road.appendChild(parcel);
-        const dx = to.left - bounds.left + to.width / 2 - 17 - x, dy = to.top - bounds.top - y + state.night.difficulty.speed * .65;
+        const dx = to.left - bounds.left + to.width / 2 - 17 - x, dy = to.top - bounds.top - y + state.night.difficulty.speed * nightView.scaleY * .65;
         const motion = parcel.animate(Array.from({length:21}, (_,i) => {const t=i/20;return {transform:`translate(${dx*t}px,${dy*t-130*4*t*(1-t)}px) rotate(${t*300}deg) scale(${1-t*.4})`,opacity:t===1?0:1};}),{duration:650,easing:"linear"});
         motion.onfinish = () => parcel.remove();
       }
@@ -1135,6 +1150,9 @@
       }
       state.night.departingTargets.push(target);
       state.night.currentTarget = null;
+      // Reserve the other side before spawning more traffic. Existing traffic
+      // keeps moving and clears within the fixed 4.2-second racing interval.
+      state.night.nextHouseLane = target.lane === 0 ? 2 : 0;
       state.night.mode = "racing";
       state.night.raceLeft = 4.2;
       state.night.obstacleCooldown = .8 / state.night.difficulty.frequency;
@@ -1149,10 +1167,11 @@
     function obstacleTouchesVan(obstacle) {
       const van = nightView.van.getBoundingClientRect();
       const item = obstacle.element.getBoundingClientRect();
-      const bodyWidth = Math.min(64, van.width) * .8;
-      const itemWidth = Math.min(46, item.width) * .85;
+      const scale = nightView.scaleY;
+      const bodyWidth = Math.min(64 * scale, van.width) * .8;
+      const itemWidth = Math.min(46 * scale, item.width) * .85;
       return Math.abs(van.left + van.width / 2 - item.left - item.width / 2) < (bodyWidth + itemWidth) / 2
-        && item.bottom - 5 > van.top + 12 && item.top + 5 < van.bottom - 8;
+        && item.bottom - 5 * scale > van.top + 12 * scale && item.top + 5 * scale < van.bottom - 8 * scale;
     }
 
     function hitObstacle(obstacle, now) {

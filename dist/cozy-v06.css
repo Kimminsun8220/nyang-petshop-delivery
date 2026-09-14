@@ -169,13 +169,26 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 #nightScreen{position:relative;isolation:isolate;overflow:hidden;background:#645060}
 .night-scenery{position:absolute;inset:-7%;z-index:0;pointer-events:none;background:linear-gradient(#4c385922,#392b4438),url('assets/petshop-night-v06.png') center/cover;transform-origin:50% 30%;will-change:transform}
 .night-shell{position:relative;z-index:1}
-#nightScreen{height:100svh;min-height:620px}
-#nightScreen .night-shell{height:100%;display:grid;grid-template-rows:auto minmax(240px,1fr) 77px 58px auto;gap:8px}
+#nightScreen{height:100svh;min-height:0}
+#nightScreen .night-shell{height:100%;max-height:800px;display:grid;grid-template-rows:auto minmax(240px,520px) 77px 58px auto;align-content:center;gap:8px}
 #nightScreen .night-top,#nightScreen .mobile-controls,#nightScreen .night-help{margin:0}
 #nightScreen .road{height:100%;min-height:0}
+#nightScreen .van{bottom:calc(27px * var(--race-scale,1));height:calc(82px * var(--race-scale,1))}
+#nightScreen .van::before{height:calc(84px * var(--race-scale,1));width:calc(64px * var(--race-scale,1))}
+#nightScreen .obstacle{font-size:calc(42px * var(--race-scale,1));line-height:1}
+#nightScreen .delivery-gate .gate-cat{height:calc(112px * var(--race-scale,1));width:calc(78px * var(--race-scale,1))}
 .timing-panel{word-break:keep-all}
 .timing-slot{height:77px;position:relative;display:flow-root}
 .timing-slot>.timing-panel:not(.delivery-active){height:61px;margin:8px 0;overflow:hidden}
+@media(max-height:600px){
+  #nightScreen{padding:6px}
+  #nightScreen .night-shell{grid-template-rows:auto minmax(140px,520px) 44px 44px auto;gap:5px}
+  #nightScreen .night-stat{padding:3px}
+  #nightScreen .drive-btn{min-height:44px;font-size:16px}
+  #nightScreen .timing-slot{height:44px}
+  #nightScreen .timing-panel:not(.delivery-active){height:44px;min-height:0;margin:0;padding:6px;font-size:12px}
+  #nightScreen .night-help{font-size:11px;line-height:1.2}
+}
 .road{contain:layout paint}
 .road::before{inset:-88px 0 0;background-position:33.333% 0,66.666% 0;animation:none;transform:translate3d(0,var(--road-scroll,0px),0);will-change:transform}
 .van{left:5.65%;transform:translate3d(var(--van-x,0px),0,0);transition:none;will-change:transform}
