@@ -90,6 +90,12 @@
     #introScreen, #storyScreen {
       position: relative;
       overflow: hidden;
+    }
+    #introScreen {
+      cursor: pointer;
+      background: #eadfc7;
+    }
+    #storyScreen {
       background:
         linear-gradient(180deg, rgba(255,244,221,.18), rgba(72,47,57,.32)),
         url('assets/petshop-day-v06.webp') center/cover fixed;
@@ -100,17 +106,29 @@
       justify-content: center;
       padding: clamp(24px, 5vh, 56px) clamp(14px, 4vw, 48px);
     }
-    #introScreen { cursor: pointer; }
+    .intro-backdrop {
+      position: absolute;
+      z-index: 0;
+      inset: -1.5%;
+      opacity: 0;
+      background-position: center;
+      background-size: cover;
+      transform: scale(1.02);
+      transition: opacity .65s ease;
+      will-change: opacity;
+    }
+    .intro-backdrop.active { opacity: 1; }
     #introScreen::before, #storyScreen::before {
       content: "";
       position: absolute;
+      z-index: 1;
       inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,.04) 35%, rgba(48,31,39,.2));
+      background: linear-gradient(180deg, rgba(255,255,255,.03) 30%, rgba(48,31,39,.26));
       pointer-events: none;
     }
     .story-card {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       width: min(860px, 100%);
       min-height: 248px;
       padding: clamp(22px, 4vw, 34px);
@@ -165,7 +183,7 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .logo-cat, .transition-moon, .recipe-step.current, .intro-copy.is-entering { animation: none !important; }
-      .story-progress span { transition: none; }
+      .story-progress span, .intro-backdrop { transition: none; }
       html { scroll-behavior: auto; }
     }
 
@@ -446,6 +464,8 @@
     </section>
 
     <section id="introScreen" class="screen" aria-labelledby="introTitle" onclick="advanceIntro(event)">
+      <div id="introBackdropA" class="intro-backdrop" aria-hidden="true"></div>
+      <div id="introBackdropB" class="intro-backdrop" aria-hidden="true"></div>
       <article class="story-card">
         <div class="intro-heading">
           <div class="intro-heading-copy">
@@ -641,6 +661,14 @@
     const OBSTACLES = ["🚗", "🚧", "🕳️"];
     const SCREEN_IDS = ["startScreen", "introScreen", "storyScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
     const SCREEN_ASSETS = {
+      intro: [
+        "assets/intro-village-v01.webp",
+        "assets/intro-cats-arrive-v01.webp",
+        "assets/intro-no-shop-v01.webp",
+        "assets/intro-petshop-open-v01.webp",
+        "assets/intro-day-night-v01.webp",
+        "assets/intro-new-day-v01.webp"
+      ],
       day: [
         "assets/petshop-day-v06.webp",
         "assets/customer-cats-v44.webp",
@@ -692,12 +720,36 @@
       "구름 사이로 따뜻한 햇빛이 내려와 마을 지붕을 포근하게 덮어요. 오늘도 냥냥마을의 골목은 천천히 깨어나고 있어요."
     ];
     const INTRO_STORY = [
-      "사람들의 도시 한편, 지도에는 나오지 않는 작은 마을 <strong>‘냥냥마을’</strong>이 있어요.",
-      "한때 갈 곳을 잃었던 고양이들이 하나둘 모여 살기 시작하면서 만들어진 마을이에요. 지금은 여러 고양이들이 각자의 집을 꾸리고 살아가고 있답니다.",
-      "그런데 냥냥마을에는 한 가지 문제가 있어요.<br><strong>고양이에게 필요한 물건을 파는 가게가 없다는 것!</strong>",
-      "그래서 마을 입구에 작은 가게 하나가 문을 열었습니다.<br><strong>「냥냥 펫샵」 🏪🐾</strong>",
-      "낮에는 주민들의 주문을 받아 간식, 사료, 장난감, 캣타워를 만들고, 밤이 되면 직접 배송차를 몰고 냥냥마을 곳곳으로 배달합니다.",
-      "<strong>오늘도 냥냥마을의 하루를 책임져볼까요?</strong>"
+      {
+        copy: "사람들의 도시 한편, 지도에는 나오지 않는 작은 마을 <strong>‘냥냥마을’</strong>이 있어요.",
+        image: "assets/intro-village-v01.webp",
+        position: "center 46%"
+      },
+      {
+        copy: "한때 갈 곳을 잃었던 고양이들이 하나둘 모여 살기 시작하면서 만들어진 마을이에요. 지금은 여러 고양이들이 각자의 집을 꾸리고 살아가고 있답니다.",
+        image: "assets/intro-cats-arrive-v01.webp",
+        position: "center 44%"
+      },
+      {
+        copy: "그런데 냥냥마을에는 한 가지 문제가 있어요.<br><strong>고양이에게 필요한 물건을 파는 가게가 없다는 것!</strong>",
+        image: "assets/intro-no-shop-v01.webp",
+        position: "center 43%"
+      },
+      {
+        copy: "그래서 마을 입구에 작은 가게 하나가 문을 열었습니다.<br><strong>「냥냥 펫샵」 🏪🐾</strong>",
+        image: "assets/intro-petshop-open-v01.webp",
+        position: "center 44%"
+      },
+      {
+        copy: "낮에는 주민들의 주문을 받아 간식, 사료, 장난감, 캣타워를 만들고, 밤이 되면 직접 배송차를 몰고 냥냥마을 곳곳으로 배달합니다.",
+        image: "assets/intro-day-night-v01.webp",
+        position: "center 43%"
+      },
+      {
+        copy: "<strong>오늘도 냥냥마을의 하루를 책임져볼까요?</strong>",
+        image: "assets/intro-new-day-v01.webp",
+        position: "center 45%"
+      }
     ];
 
     let state;
@@ -709,6 +761,7 @@
     let pausedAt = 0;
     let pauseReturnFocus = null;
     let introStoryIndex = 0;
+    let introBackdropLayer = 1;
 
     let lastCatGreeting = -Infinity;
     function greetCat(button, clicked = false) {
@@ -941,7 +994,7 @@
       button.disabled = true;
       button.textContent = "가게 준비 중…";
       document.getElementById("startScreen").setAttribute("aria-busy", "true");
-      await prepareImages("day");
+      await Promise.all([prepareImages("day"), preloadImage(INTRO_STORY[0].image)]);
       state = freshState();
       setDayPane('shop');
       const firstProducts = ["snack", "food", "toy"];
@@ -951,6 +1004,7 @@
       state.phase = "intro";
       renderIntroStep(0);
       setScreen("introScreen");
+      prepareImages("intro");
       document.getElementById("startScreen").removeAttribute("aria-busy");
       button.textContent = label;
       button.disabled = false;
@@ -960,16 +1014,33 @@
 
     function renderIntroStep(index) {
       introStoryIndex = Math.max(0, Math.min(INTRO_STORY.length - 1, index));
+      const scene = INTRO_STORY[introStoryIndex];
       const copy = document.getElementById("introStoryCopy");
       copy.classList.remove("is-entering");
-      copy.innerHTML = `<p>${INTRO_STORY[introStoryIndex]}</p>`;
+      copy.innerHTML = `<p>${scene.copy}</p>`;
       void copy.offsetWidth;
       copy.classList.add("is-entering");
+      renderIntroBackdrop(scene, introStoryIndex);
       document.getElementById("introProgressLabel").textContent = `${introStoryIndex + 1} / ${INTRO_STORY.length}`;
       document.getElementById("introProgress").innerHTML = INTRO_STORY.map((_, step) => `<span class="${step === introStoryIndex ? "active" : ""}"></span>`).join("");
       document.getElementById("introNextButton").textContent = introStoryIndex === INTRO_STORY.length - 1
         ? "🐾 냥냥 펫샵 OPEN"
         : "다음 이야기";
+    }
+
+    async function renderIntroBackdrop(scene, expectedIndex) {
+      const loaded = await preloadImage(scene.image);
+      if (!loaded || introStoryIndex !== expectedIndex) return;
+      const nextLayer = introBackdropLayer === 0 ? 1 : 0;
+      const next = document.getElementById(nextLayer === 0 ? "introBackdropA" : "introBackdropB");
+      const current = document.getElementById(introBackdropLayer === 0 ? "introBackdropA" : "introBackdropB");
+      next.style.backgroundImage = `url("${scene.image}")`;
+      next.style.backgroundPosition = scene.position;
+      requestAnimationFrame(() => {
+        next.classList.add("active");
+        current.classList.remove("active");
+        introBackdropLayer = nextLayer;
+      });
     }
 
     function advanceIntro(event) {
