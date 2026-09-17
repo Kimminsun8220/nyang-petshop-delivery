@@ -95,18 +95,14 @@
       cursor: pointer;
       background: #eadfc7;
     }
-    #storyScreen {
-      background:
-        linear-gradient(180deg, rgba(255,244,221,.18), rgba(72,47,57,.32)),
-        url('assets/petshop-day-v06.webp') center/cover fixed;
-    }
+    #storyScreen { background: #eadfc7; }
     #introScreen.active, #storyScreen.active {
       display: flex;
       align-items: flex-end;
       justify-content: center;
       padding: clamp(24px, 5vh, 56px) clamp(14px, 4vw, 48px);
     }
-    .intro-backdrop {
+    .story-backdrop {
       position: absolute;
       z-index: 0;
       inset: -1.5%;
@@ -117,7 +113,7 @@
       transition: opacity .65s ease;
       will-change: opacity;
     }
-    .intro-backdrop.active { opacity: 1; }
+    .story-backdrop.active { opacity: 1; }
     #introScreen::before, #storyScreen::before {
       content: "";
       position: absolute;
@@ -153,10 +149,7 @@
     .story-progress span.active { width: 22px; border-radius: 99px; background: var(--pink-dark); }
     .intro-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
     .intro-footer .primary-btn { min-width: 190px; }
-    .story-section { margin-top: 14px; padding: 15px 18px; border: 1px solid rgba(213,166,183,.65); border-radius: 17px; background: rgba(255,250,252,.64); }
-    .story-section.result { border-color: rgba(139,194,174,.75); background: rgba(240,252,247,.66); }
-    .story-section h3 { margin: 0 0 9px; font-size: 18px; }
-    .story-section p { margin: 0; color: #5f5263; font-size: 16px; line-height: 1.7; word-break: keep-all; }
+    .day-story-copy { margin-top: 14px; }
     .story-actions { position: relative; z-index: 1; margin-top: 18px; text-align: right; }
     .story-actions .primary-btn { min-width: 230px; font-size: 18px; }
     @keyframes storyReveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -168,7 +161,6 @@
       .intro-footer { align-items: stretch; flex-direction: column; gap: 13px; }
       .story-progress { justify-content: center; }
       .intro-footer .primary-btn, .story-actions .primary-btn { width: 100%; min-width: 0; }
-      .story-section { padding: 16px; }
     }
     @media (max-height: 500px) and (orientation: landscape) {
       #introScreen.active, #storyScreen.active { padding: 10px 20px; }
@@ -176,14 +168,12 @@
       .intro-heading { margin-bottom: 8px; }
       .intro-copy { min-height: 48px; }
       .intro-footer { margin-top: 9px; }
-      .story-section { margin-top: 7px; padding: 9px 14px; }
-      .story-section h3 { margin-bottom: 4px; }
-      .story-section p { line-height: 1.5; }
+      .day-story-copy { margin-top: 7px; font-size: 16px; line-height: 1.5; }
       .story-actions { margin-top: 8px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .logo-cat, .transition-moon, .recipe-step.current, .intro-copy.is-entering { animation: none !important; }
-      .story-progress span, .intro-backdrop { transition: none; }
+      .story-progress span, .story-backdrop { transition: none; }
       html { scroll-behavior: auto; }
     }
 
@@ -464,8 +454,8 @@
     </section>
 
     <section id="introScreen" class="screen" aria-labelledby="introTitle" onclick="advanceIntro(event)">
-      <div id="introBackdropA" class="intro-backdrop" aria-hidden="true"></div>
-      <div id="introBackdropB" class="intro-backdrop" aria-hidden="true"></div>
+      <div id="introBackdropA" class="story-backdrop" aria-hidden="true"></div>
+      <div id="introBackdropB" class="story-backdrop" aria-hidden="true"></div>
       <article class="story-card">
         <div class="intro-heading">
           <div class="intro-heading-copy">
@@ -483,10 +473,12 @@
     </section>
 
     <section id="storyScreen" class="screen" aria-labelledby="dayStoryTitle">
+      <div id="dayStoryBackdropA" class="story-backdrop" aria-hidden="true"></div>
+      <div id="dayStoryBackdropB" class="story-backdrop" aria-hidden="true"></div>
       <article class="story-card">
         <p id="dayStoryKicker" class="story-kicker">☀️ DAY 1</p>
         <h2 id="dayStoryTitle">오늘의 냥냥마을</h2>
-        <div id="dayStoryContent"></div>
+        <div id="dayStoryContent" class="story-copy day-story-copy"></div>
         <div class="story-actions">
           <button id="dayStoryButton" class="primary-btn" type="button" onclick="enterDay()">가게 문 열기</button>
         </div>
@@ -669,6 +661,15 @@
         "assets/intro-day-night-v01.webp",
         "assets/intro-new-day-v01.webp"
       ],
+      story: [
+        "assets/day-story-entrance-v01.webp",
+        "assets/day-story-breeze-v01.webp",
+        "assets/day-story-fountain-v01.webp",
+        "assets/day-story-bakery-v01.webp",
+        "assets/day-story-dew-v01.webp",
+        "assets/day-story-board-v01.webp",
+        "assets/day-story-sunlight-v01.webp"
+      ],
       day: [
         "assets/petshop-day-v06.webp",
         "assets/customer-cats-v44.webp",
@@ -711,13 +712,13 @@
     const SAVE_VERSION = 1;
 
     const VILLAGE_STORIES = [
-      "마을 입구의 작은 간판이 아침 햇살을 받아 반짝여요. 고양이 주민들이 새로 문을 연 가게를 궁금해하며 하나둘 골목으로 나오고 있어요.",
-      "포근한 바람이 지붕 위 빨래와 창가의 작은 화분을 살랑살랑 흔들어요. 냥냥마을의 느긋한 아침이 시작됐어요.",
-      "마을 광장 분수대 옆으로 참새들이 모여들었어요. 창문을 연 고양이들이 저마다 오늘의 날씨를 살피고 있답니다.",
-      "골목 끝 빵집에서 고소한 냄새가 퍼져 나와요. 산책을 나온 주민들의 발걸음도 평소보다 조금 가벼워 보여요.",
-      "밤새 내린 이슬이 돌담 위에서 반짝여요. 냥냥마을 주민들이 각자의 하루를 준비하며 불을 하나둘 켜고 있어요.",
-      "마을 게시판에 이번 주 소식이 새로 붙었어요. 지나가던 고양이들이 잠시 멈춰 이웃들의 안부를 읽고 있답니다.",
-      "구름 사이로 따뜻한 햇빛이 내려와 마을 지붕을 포근하게 덮어요. 오늘도 냥냥마을의 골목은 천천히 깨어나고 있어요."
+      { copy: "마을 입구의 작은 간판이 아침 햇살을 받아 반짝여요. 고양이 주민들이 새로 문을 연 가게를 궁금해하며 하나둘 골목으로 나오고 있어요.", image: "assets/day-story-entrance-v01.webp", position: "center 43%" },
+      { copy: "포근한 바람이 지붕 위 빨래와 창가의 작은 화분을 살랑살랑 흔들어요. 냥냥마을의 느긋한 아침이 시작됐어요.", image: "assets/day-story-breeze-v01.webp", position: "center 43%" },
+      { copy: "마을 광장 분수대 옆으로 참새들이 모여들었어요. 창문을 연 고양이들이 저마다 오늘의 날씨를 살피고 있답니다.", image: "assets/day-story-fountain-v01.webp", position: "center 42%" },
+      { copy: "골목 끝 빵집에서 고소한 냄새가 퍼져 나와요. 산책을 나온 주민들의 발걸음도 평소보다 조금 가벼워 보여요.", image: "assets/day-story-bakery-v01.webp", position: "center 43%" },
+      { copy: "밤새 내린 이슬이 돌담 위에서 반짝여요. 냥냥마을 주민들이 각자의 하루를 준비하며 불을 하나둘 켜고 있어요.", image: "assets/day-story-dew-v01.webp", position: "center 43%" },
+      { copy: "마을 게시판에 이번 주 소식이 새로 붙었어요. 지나가던 고양이들이 잠시 멈춰 이웃들의 안부를 읽고 있답니다.", image: "assets/day-story-board-v01.webp", position: "center 42%" },
+      { copy: "구름 사이로 따뜻한 햇빛이 내려와 마을 지붕을 포근하게 덮어요. 오늘도 냥냥마을의 골목은 천천히 깨어나고 있어요.", image: "assets/day-story-sunlight-v01.webp", position: "center 43%" }
     ];
     const INTRO_STORY = [
       {
@@ -762,6 +763,7 @@
     let pauseReturnFocus = null;
     let introStoryIndex = 0;
     let introBackdropLayer = 1;
+    let dayStoryBackdropLayer = 1;
 
     let lastCatGreeting = -Infinity;
     function greetCat(button, clicked = false) {
@@ -1059,8 +1061,23 @@
       showDayOpening();
     }
 
-    function dayVillageStory(day) {
+    function dayVillageScene(day) {
       return VILLAGE_STORIES[(Math.max(1, day) - 1) % VILLAGE_STORIES.length];
+    }
+
+    async function renderDayStoryBackdrop(scene, expectedDay) {
+      const loaded = await preloadImage(scene.image);
+      if (!loaded || !state || state.day !== expectedDay || state.phase !== "story") return;
+      const nextLayer = dayStoryBackdropLayer === 0 ? 1 : 0;
+      const next = document.getElementById(nextLayer === 0 ? "dayStoryBackdropA" : "dayStoryBackdropB");
+      const current = document.getElementById(dayStoryBackdropLayer === 0 ? "dayStoryBackdropA" : "dayStoryBackdropB");
+      next.style.backgroundImage = `url("${scene.image}")`;
+      next.style.backgroundPosition = scene.position;
+      requestAnimationFrame(() => {
+        next.classList.add("active");
+        current.classList.remove("active");
+        dayStoryBackdropLayer = nextLayer;
+      });
     }
 
     function previousDayStory(result) {
@@ -1099,13 +1116,14 @@
       ensureStoryState(state);
       state.phase = "story";
       state.story.lastPresentedDay = state.day;
+      const scene = dayVillageScene(state.day);
       document.getElementById("dayStoryKicker").textContent = `☀️ DAY ${state.day}`;
-      const sections = [`<section class="story-section"><h3>오늘의 냥냥마을</h3><p>${dayVillageStory(state.day)}</p></section>`];
       const yesterday = previousDayStory(state.lastResult);
-      if (yesterday) sections.push(`<section class="story-section result"><h3>어젯밤, 그 후</h3><p>${yesterday}</p></section>`);
-      document.getElementById("dayStoryContent").innerHTML = sections.join("");
+      document.getElementById("dayStoryContent").innerHTML = `<p>${scene.copy}${yesterday ? ` ${yesterday}` : ""}</p>`;
       document.getElementById("dayStoryButton").textContent = `DAY ${state.day} 시작하기`;
       setScreen("storyScreen");
+      renderDayStoryBackdrop(scene, state.day);
+      prepareImages("story");
     }
 
     function enterDay() {
