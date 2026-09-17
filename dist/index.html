@@ -886,7 +886,14 @@
       if (order.status === "ready") {
         panel.innerHTML = `
           <h2>✨ 포근포근 조합대</h2>
-          <div class="craft-empty" style="height:165px"><div><span style="font-size:58px">🎁</span><br><strong>✨ ${order.customerName}의 ${product.name} 완성!</strong><br><small>자동으로 배송 대기 선반에 올렸어요.</small></div></div>
+          <div class="craft-empty craft-complete" role="status">
+            <div class="craft-complete-gift" aria-hidden="true">🎁</div>
+            <div class="craft-complete-title">
+              <span class="craft-complete-sparkle" aria-hidden="true">✨</span>
+              <strong>${order.customerName}의 ${product.name} 완성!</strong>
+            </div>
+            <small class="craft-complete-description">자동으로 배송 대기 선반에 올렸어요.</small>
+          </div>
           ${inventoryMarkup(null)}
           <div class="craft-fx" aria-hidden="true"></div>`;
         return;

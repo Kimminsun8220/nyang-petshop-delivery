@@ -126,6 +126,11 @@ button:focus-visible {outline:3px solid #5b8958;outline-offset:3px}
 .craft-panel .craft-empty{height:auto!important;max-height:none;min-height:125px;padding:12px 6px 18px;line-height:1.5}
 .craft-panel .craft-empty span{display:inline-block;font-size:38px!important;margin-bottom:8px}
 .craft-panel .craft-empty small{display:inline-block;margin-top:6px}
+.craft-panel .craft-empty.craft-complete{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:165px;padding:16px 12px 20px;line-height:1.4}
+.craft-panel .craft-complete .craft-complete-gift{display:block;margin:0 0 4px;font-size:48px!important;line-height:1}
+.craft-panel .craft-complete .craft-complete-title{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;max-width:100%;font-size:18px;line-height:1.4;text-align:center;text-wrap:balance}
+.craft-panel .craft-complete .craft-complete-sparkle{display:inline-block;flex:none;margin:0;font-size:30px!important;line-height:1}
+.craft-panel .craft-complete .craft-complete-description{display:block;margin:0;color:var(--muted);font-size:14px;line-height:1.5;text-align:center}
 .craft-panel .craft-empty + .inventory-box{margin-top:10px}
 .logo-cat{width:105px;height:150px;background-size:400% 278.667%;background-position:0 22.388%}
 .delivery-gate .gate-cat{width:78px;height:112px;background-size:400% 278.667%;background-position:100% 22.388%}
