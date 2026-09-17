@@ -84,6 +84,51 @@
     .pill { padding: 7px 12px; border-radius: 999px; background: #fff; border: 1px solid #eadde4; font-weight: 700; }
     .start-paw { position: absolute; font-size: 58px; opacity: .16; transform: rotate(var(--r)); }
 
+    /* STORY */
+    #introScreen, #storyScreen {
+      position: relative;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 14% 16%, rgba(255,255,255,.9) 0 3%, transparent 3.2%),
+        radial-gradient(circle at 88% 10%, rgba(255,255,255,.75) 0 4%, transparent 4.2%),
+        linear-gradient(155deg, #fff7df 0%, #ffe8ef 48%, #dcf6ed 100%);
+    }
+    #introScreen.active, #storyScreen.active { display: grid; place-items: center; padding: 24px; }
+    .story-card {
+      position: relative;
+      width: min(720px, 100%);
+      padding: clamp(26px, 6vw, 52px);
+      border: 3px solid rgba(255,255,255,.94);
+      border-radius: 36px;
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 24px 60px rgba(125,80,113,.2);
+    }
+    .story-card::before, .story-card::after { content: ""; position: absolute; width: 42px; height: 42px; opacity: .42; background: radial-gradient(circle at 50% 30%, var(--pink) 0 20%, transparent 22%), radial-gradient(circle at 24% 57%, var(--pink) 0 16%, transparent 18%), radial-gradient(circle at 76% 57%, var(--pink) 0 16%, transparent 18%), radial-gradient(ellipse at 50% 78%, var(--pink) 0 28%, transparent 30%); }
+    .story-card::before { left: 20px; top: 18px; transform: rotate(-18deg); }
+    .story-card::after { right: 20px; bottom: 18px; transform: rotate(18deg); }
+    .story-kicker { margin: 0 0 8px; color: #aa516b; font-size: 14px; font-weight: 900; letter-spacing: .08em; text-align: center; }
+    .story-card h2 { margin: 0; font-size: clamp(27px, 6vw, 42px); line-height: 1.2; text-align: center; }
+    .story-copy { margin: 24px auto 0; max-width: 590px; color: #574a5c; font-size: clamp(16px, 2.4vw, 18px); line-height: 1.85; word-break: keep-all; }
+    .story-copy p { margin: 0 0 14px; }
+    .story-copy strong { color: #9f4561; }
+    .story-divider { width: 64px; height: 5px; margin: 24px auto; border-radius: 99px; background: linear-gradient(90deg, var(--peach), var(--pink), var(--mint)); }
+    .story-section { margin-top: 18px; padding: 18px 20px; border: 2px solid #f1dfe6; border-radius: 20px; background: #fffafc; }
+    .story-section.result { border-color: #cce9df; background: #f3fcf8; }
+    .story-section h3 { margin: 0 0 9px; font-size: 18px; }
+    .story-section p { margin: 0; color: #5f5263; font-size: 16px; line-height: 1.7; word-break: keep-all; }
+    .story-actions { position: relative; z-index: 1; margin-top: 28px; text-align: center; }
+    .story-actions .primary-btn { min-width: 230px; font-size: 18px; }
+    @media (max-width: 520px) {
+      #introScreen.active, #storyScreen.active { align-items: start; padding: 16px 12px 28px; }
+      .story-card { padding: 28px 20px; border-radius: 28px; }
+      .story-section { padding: 16px; }
+      .story-actions .primary-btn { width: 100%; min-width: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo-cat, .transition-moon, .recipe-step.current { animation: none !important; }
+      html { scroll-behavior: auto; }
+    }
+
     /* DAY */
     #dayScreen { background: linear-gradient(#fff4d9 0 130px, #fff8ec 130px 100%); }
     .day-shell { width: min(1240px, 100%); margin: 0 auto; padding: 18px clamp(14px, 3vw, 32px) 44px; }
@@ -356,6 +401,36 @@
       </div>
     </section>
 
+    <section id="introScreen" class="screen" aria-labelledby="introTitle">
+      <article class="story-card">
+        <p class="story-kicker">WELCOME TO NYANGNYANG VILLAGE</p>
+        <h2 id="introTitle">지도에는 없는 작은 마을</h2>
+        <div class="story-divider" aria-hidden="true"></div>
+        <div class="story-copy">
+          <p>사람들의 도시 한편, 지도에는 나오지 않는 작은 마을 <strong>‘냥냥마을’</strong>.</p>
+          <p>한때 갈 곳을 잃었던 고양이들이 하나둘 모여 살기 시작하면서 만들어진 마을이에요. 지금은 여러 고양이들이 각자의 집을 꾸리고 살아가고 있답니다.</p>
+          <p>그런데 냥냥마을에는 한 가지 문제가 있어요.<br><strong>고양이에게 필요한 물건을 파는 가게가 없다는 것!</strong></p>
+          <p>그래서 마을 입구에 작은 가게 하나가 문을 열었습니다.<br><strong>「냥냥 펫샵」 🏪🐾</strong></p>
+          <p>낮에는 주민들의 주문을 받아 간식, 사료, 장난감, 캣타워를 만들고, 밤이 되면 직접 배송차를 몰고 냥냥마을 곳곳으로 배달합니다.</p>
+          <p><strong>오늘도 냥냥마을의 하루를 책임져볼까요?</strong></p>
+        </div>
+        <div class="story-actions">
+          <button class="primary-btn" type="button" onclick="openShopFromIntro()">🐾 냥냥 펫샵 OPEN</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="storyScreen" class="screen" aria-labelledby="dayStoryTitle">
+      <article class="story-card">
+        <p id="dayStoryKicker" class="story-kicker">☀️ DAY 1</p>
+        <h2 id="dayStoryTitle">오늘의 냥냥마을</h2>
+        <div id="dayStoryContent"></div>
+        <div class="story-actions">
+          <button id="dayStoryButton" class="primary-btn" type="button" onclick="enterDay()">가게 문 열기</button>
+        </div>
+      </article>
+    </section>
+
     <section id="dayScreen" class="screen" aria-label="낮 펫샵 화면">
       <div class="day-shell">
         <header class="topbar">
@@ -517,9 +592,19 @@
       { id: "tabby", label: "회색 줄무늬", names: ["후추", "고등어", "호두"] }
     ];
     const OBSTACLES = ["🚗", "🚧", "🕳️"];
-    const SCREEN_IDS = ["startScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
+    const SCREEN_IDS = ["startScreen", "introScreen", "storyScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
     const SAVE_KEY = "nyang-petshop-delivery-save";
     const SAVE_VERSION = 1;
+
+    const VILLAGE_STORIES = [
+      "마을 입구의 작은 간판이 아침 햇살을 받아 반짝여요. 고양이 주민들이 새로 문을 연 가게를 궁금해하며 하나둘 골목으로 나오고 있어요.",
+      "포근한 바람이 지붕 위 빨래와 창가의 작은 화분을 살랑살랑 흔들어요. 냥냥마을의 느긋한 아침이 시작됐어요.",
+      "마을 광장 분수대 옆으로 참새들이 모여들었어요. 창문을 연 고양이들이 저마다 오늘의 날씨를 살피고 있답니다.",
+      "골목 끝 빵집에서 고소한 냄새가 퍼져 나와요. 산책을 나온 주민들의 발걸음도 평소보다 조금 가벼워 보여요.",
+      "밤새 내린 이슬이 돌담 위에서 반짝여요. 냥냥마을 주민들이 각자의 하루를 준비하며 불을 하나둘 켜고 있어요.",
+      "마을 게시판에 이번 주 소식이 새로 붙었어요. 지나가던 고양이들이 잠시 멈춰 이웃들의 안부를 읽고 있답니다.",
+      "구름 사이로 따뜻한 햇빛이 내려와 마을 지붕을 포근하게 덮어요. 오늘도 냥냥마을의 골목은 천천히 깨어나고 있어요."
+    ];
 
     let state;
     let toastTimer = null;
@@ -557,7 +642,8 @@
         orderSequence: 0,
         dayPane: "shop",
         lastResult: null,
-        night: null
+        night: null,
+        story: { introSeen: false, lastPresentedDay: 0 }
       };
     }
 
@@ -618,7 +704,7 @@
       loaded.inventory = { ...base.inventory, ...(savedState.inventory || {}) };
       loaded.inventoryDates = Object.fromEntries(Object.keys(MATERIALS).map(key => [key, Array.isArray(savedState.inventoryDates?.[key]) ? savedState.inventoryDates[key] : []]));
       loaded.customerSlots = [0, 1, 2].map(index => savedState.customerSlots[index] || null);
-      return loaded;
+      return ensureStoryState(loaded, true);
     }
 
     function continueGame() {
@@ -642,6 +728,8 @@
       } else if (state.phase === "gameover") {
         renderGameOver();
         setScreen("gameoverScreen");
+      } else if (state.phase === "intro" || state.phase === "story") {
+        showDayOpening();
       } else {
         state.phase = "day";
         setDayPane(state.dayPane || "shop");
@@ -726,11 +814,23 @@
       setScreen("startScreen");
     }
 
+    // Save Worktree에서 불러온 예전 저장 데이터도 안전하게 확장할 수 있는 기본 형태다.
+    function ensureStoryState(gameState, fromSavedGame = false) {
+      gameState.story = { introSeen: true, lastPresentedDay: 0, ...(gameState.story || {}) };
+      if (fromSavedGame) gameState.story.introSeen = true;
+      return gameState;
+    }
+
     function setScreen(id) {
       window.gameSound?.setScene(id);
       SCREEN_IDS.forEach(screenId => document.getElementById(screenId).classList.toggle("active", screenId === id));
       document.getElementById("pauseButton").hidden = id === "startScreen";
       window.scrollTo({ top: 0, behavior: id === "nightScreen" ? "instant" : "smooth" });
+      if (id === "introScreen" || id === "storyScreen") {
+        const heading = document.getElementById(id === "introScreen" ? "introTitle" : "dayStoryTitle");
+        heading.setAttribute("tabindex", "-1");
+        requestAnimationFrame(() => heading.focus({ preventScroll: true }));
+      }
     }
 
     function startGame(force = false) {
@@ -744,10 +844,72 @@
       firstProducts.forEach((productId, slotIndex) => {
         state.customerSlots[slotIndex] = createOrder(slotIndex, productId);
       });
+      state.phase = "intro";
+      setScreen("introScreen");
+    }
+
+    function openShopFromIntro() {
+      if (!state || state.phase !== "intro") return;
+      state.story.introSeen = true;
+      showDayOpening();
+    }
+
+    function dayVillageStory(day) {
+      return VILLAGE_STORIES[(Math.max(1, day) - 1) % VILLAGE_STORIES.length];
+    }
+
+    function previousDayStory(result) {
+      if (!result) return null;
+      const delivered = result.delivered || [];
+      const delayed = result.delayed || [];
+      const cancelled = result.cancelled || [];
+      const parts = [];
+
+      if (delivered.length === 1) {
+        const order = delivered[0];
+        parts.push(`어젯밤 ${order.customerName}네 ${PRODUCTS[order.productId].name} 배송이 무사히 끝났어요.`);
+      } else if (delivered.length > 1) {
+        const homes = delivered.map(order => `${order.customerName}네`).join(", ");
+        parts.push(`어젯밤 ${homes} 배송이 무사히 끝났어요.`);
+      }
+
+      if (delayed.length === 1) {
+        parts.push(`${delayed[0].customerName}의 주문은 아직 배송을 기다리고 있어요. 오늘 다시 준비할 수 있어요.`);
+      } else if (delayed.length > 1) {
+        parts.push(`${delayed.map(order => order.customerName).join(", ")}의 주문은 아직 배송을 기다리고 있어요. 오늘 다시 준비할 수 있어요.`);
+      }
+
+      if (cancelled.length === 1) {
+        parts.push(`${cancelled[0].customerName}의 주문은 오래 기다린 끝에 취소됐어요. 가게 앞이 잠시 조용해졌답니다.`);
+      } else if (cancelled.length > 1) {
+        parts.push(`${cancelled.map(order => order.customerName).join(", ")}의 주문은 오래 기다린 끝에 취소됐어요. 가게 앞이 잠시 조용해졌답니다.`);
+      }
+
+      if (!parts.length) parts.push("어젯밤에는 완료된 배송이 없었어요. 가게는 오늘의 새 출발을 차분히 준비하고 있어요.");
+      return parts.join(" ");
+    }
+
+    function showDayOpening() {
+      if (!state) return;
+      ensureStoryState(state);
+      state.phase = "story";
+      state.story.lastPresentedDay = state.day;
+      document.getElementById("dayStoryKicker").textContent = `☀️ DAY ${state.day}`;
+      const sections = [`<section class="story-section"><h3>오늘의 냥냥마을</h3><p>${dayVillageStory(state.day)}</p></section>`];
+      const yesterday = previousDayStory(state.lastResult);
+      if (yesterday) sections.push(`<section class="story-section result"><h3>어젯밤, 그 후</h3><p>${yesterday}</p></section>`);
+      document.getElementById("dayStoryContent").innerHTML = sections.join("");
+      document.getElementById("dayStoryButton").textContent = `DAY ${state.day} 시작하기`;
+      setScreen("storyScreen");
+    }
+
+    function enterDay() {
+      if (!state || state.phase !== "story") return;
       state.phase = "day";
+      state.selectedOrderId = null;
       renderDay();
       setScreen("dayScreen");
-      showToast("DAY 1! 고양이 손님들의 주문을 준비해 주세요 🐾");
+      showToast(`DAY ${state.day}! 오늘의 주문을 준비해 주세요 🐾`);
     }
 
     function setDayPane(pane) {
@@ -1608,11 +1770,8 @@
         setScreen("gameoverScreen");
         return;
       }
-      state.phase = "day";
       state.selectedOrderId = null;
-      renderDay();
-      setScreen("dayScreen");
-      showToast(`DAY ${state.day}! 이월 고객을 먼저 챙겨 주세요 🐾`);
+      showDayOpening();
     }
 
     function renderGameOver() {
@@ -1673,7 +1832,7 @@
     <button id="soundToggle" class="speaker-icon" type="button" aria-expanded="false" aria-controls="volumePanel" aria-label="소리 켜짐 · 볼륨 조절 열기">🔊</button>
   </div>
   <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
-<script src="petshop-audio-v12.js?v=43"></script>
+<script src="petshop-audio-v12.js?v=54"></script>
 <script src="petshop-illustrations-v52.js"></script>
 </body>
 </html>
