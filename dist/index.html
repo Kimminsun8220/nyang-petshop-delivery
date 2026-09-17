@@ -1080,37 +1080,6 @@
       });
     }
 
-    function previousDayStory(result) {
-      if (!result) return null;
-      const delivered = result.delivered || [];
-      const delayed = result.delayed || [];
-      const cancelled = result.cancelled || [];
-      const parts = [];
-
-      if (delivered.length === 1) {
-        const order = delivered[0];
-        parts.push(`어젯밤 ${order.customerName}네 ${PRODUCTS[order.productId].name} 배송이 무사히 끝났어요.`);
-      } else if (delivered.length > 1) {
-        const homes = delivered.map(order => `${order.customerName}네`).join(", ");
-        parts.push(`어젯밤 ${homes} 배송이 무사히 끝났어요.`);
-      }
-
-      if (delayed.length === 1) {
-        parts.push(`${delayed[0].customerName}의 주문은 아직 배송을 기다리고 있어요. 오늘 다시 준비할 수 있어요.`);
-      } else if (delayed.length > 1) {
-        parts.push(`${delayed.map(order => order.customerName).join(", ")}의 주문은 아직 배송을 기다리고 있어요. 오늘 다시 준비할 수 있어요.`);
-      }
-
-      if (cancelled.length === 1) {
-        parts.push(`${cancelled[0].customerName}의 주문은 오래 기다린 끝에 취소됐어요. 가게 앞이 잠시 조용해졌답니다.`);
-      } else if (cancelled.length > 1) {
-        parts.push(`${cancelled.map(order => order.customerName).join(", ")}의 주문은 오래 기다린 끝에 취소됐어요. 가게 앞이 잠시 조용해졌답니다.`);
-      }
-
-      if (!parts.length) parts.push("어젯밤에는 완료된 배송이 없었어요. 가게는 오늘의 새 출발을 차분히 준비하고 있어요.");
-      return parts.join(" ");
-    }
-
     function showDayOpening() {
       if (!state) return;
       ensureStoryState(state);
@@ -1118,8 +1087,7 @@
       state.story.lastPresentedDay = state.day;
       const scene = dayVillageScene(state.day);
       document.getElementById("dayStoryKicker").textContent = `☀️ DAY ${state.day}`;
-      const yesterday = previousDayStory(state.lastResult);
-      document.getElementById("dayStoryContent").innerHTML = `<p>${scene.copy}${yesterday ? ` ${yesterday}` : ""}</p>`;
+      document.getElementById("dayStoryContent").innerHTML = `<p>${scene.copy}</p>`;
       document.getElementById("dayStoryButton").textContent = `DAY ${state.day} 시작하기`;
       setScreen("storyScreen");
       renderDayStoryBackdrop(scene, state.day);
