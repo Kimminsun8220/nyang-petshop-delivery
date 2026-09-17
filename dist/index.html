@@ -80,9 +80,56 @@
     .primary-btn:hover, .secondary-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
     .primary-btn:active, .secondary-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #c84f70; }
     .start-btn { margin-top: 18px; min-width: 210px; font-size: 19px; }
+    .start-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+    .start-actions .start-btn { margin-top: 0; }
     .controls-note { margin-top: 24px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 14px; }
     .pill { padding: 7px 12px; border-radius: 999px; background: #fff; border: 1px solid #eadde4; font-weight: 700; }
     .start-paw { position: absolute; font-size: 58px; opacity: .16; transform: rotate(var(--r)); }
+
+    /* STORY */
+    #introScreen, #storyScreen {
+      position: relative;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 14% 16%, rgba(255,255,255,.9) 0 3%, transparent 3.2%),
+        radial-gradient(circle at 88% 10%, rgba(255,255,255,.75) 0 4%, transparent 4.2%),
+        linear-gradient(155deg, #fff7df 0%, #ffe8ef 48%, #dcf6ed 100%);
+    }
+    #introScreen.active, #storyScreen.active { display: grid; place-items: center; padding: 24px; }
+    .story-card {
+      position: relative;
+      width: min(720px, 100%);
+      padding: clamp(26px, 6vw, 52px);
+      border: 3px solid rgba(255,255,255,.94);
+      border-radius: 36px;
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 24px 60px rgba(125,80,113,.2);
+    }
+    .story-card::before, .story-card::after { content: ""; position: absolute; width: 42px; height: 42px; opacity: .42; background: radial-gradient(circle at 50% 30%, var(--pink) 0 20%, transparent 22%), radial-gradient(circle at 24% 57%, var(--pink) 0 16%, transparent 18%), radial-gradient(circle at 76% 57%, var(--pink) 0 16%, transparent 18%), radial-gradient(ellipse at 50% 78%, var(--pink) 0 28%, transparent 30%); }
+    .story-card::before { left: 20px; top: 18px; transform: rotate(-18deg); }
+    .story-card::after { right: 20px; bottom: 18px; transform: rotate(18deg); }
+    .story-kicker { margin: 0 0 8px; color: #aa516b; font-size: 14px; font-weight: 900; letter-spacing: .08em; text-align: center; }
+    .story-card h2 { margin: 0; font-size: clamp(27px, 6vw, 42px); line-height: 1.2; text-align: center; }
+    .story-copy { margin: 24px auto 0; max-width: 590px; color: #574a5c; font-size: clamp(16px, 2.4vw, 18px); line-height: 1.85; word-break: keep-all; }
+    .story-copy p { margin: 0 0 14px; }
+    .story-copy strong { color: #9f4561; }
+    .story-divider { width: 64px; height: 5px; margin: 24px auto; border-radius: 99px; background: linear-gradient(90deg, var(--peach), var(--pink), var(--mint)); }
+    .story-section { margin-top: 18px; padding: 18px 20px; border: 2px solid #f1dfe6; border-radius: 20px; background: #fffafc; }
+    .story-section.result { border-color: #cce9df; background: #f3fcf8; }
+    .story-section h3 { margin: 0 0 9px; font-size: 18px; }
+    .story-section p { margin: 0; color: #5f5263; font-size: 16px; line-height: 1.7; word-break: keep-all; }
+    .story-actions { position: relative; z-index: 1; margin-top: 28px; text-align: center; }
+    .story-actions .primary-btn { min-width: 230px; font-size: 18px; }
+    @media (max-width: 520px) {
+      #introScreen.active, #storyScreen.active { align-items: start; padding: 16px 12px 28px; }
+      .story-card { padding: 28px 20px; border-radius: 28px; }
+      .story-section { padding: 16px; }
+      .story-actions .primary-btn { width: 100%; min-width: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .logo-cat, .transition-moon, .recipe-step.current { animation: none !important; }
+      html { scroll-behavior: auto; }
+    }
 
     /* DAY */
     #dayScreen { background: linear-gradient(#fff4d9 0 130px, #fff8ec 130px 100%); }
@@ -134,7 +181,7 @@
     }
     .buy-btn:disabled, .inventory-btn:disabled { opacity: .45; cursor: not-allowed; }
 
-    .craft-panel { position: relative; overflow: hidden; min-height: 330px; }
+    .craft-panel { position: relative; z-index: 1; overflow: visible; min-height: 330px; }
     .craft-empty { height: 255px; display: grid; place-items: center; color: var(--muted); text-align: center; line-height: 1.7; }
     .craft-order { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 13px 0; padding: 12px; border-radius: 15px; background: #fff5f8; }
     .flow-guide { margin: 11px 0 13px; padding: 9px 11px; border-radius: 12px; background: #fff8dd; color: #745a32; font-size: 12px; font-weight: 800; text-align: center; }
@@ -233,6 +280,16 @@
 
     .toast { position: fixed; z-index: 100; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: min(90vw, 470px); padding: 12px 18px; border-radius: 14px; color: white; background: rgba(62,48,65,.94); box-shadow: 0 12px 35px rgba(0,0,0,.2); text-align: center; font-weight: 800; opacity: 0; pointer-events: none; transition: .2s ease; }
     .toast.show { opacity: 1; transform: translate(-50%,0); }
+    .pause-button { position: fixed; z-index: 90; top: 14px; right: 14px; width: 48px; height: 48px; border: 2px solid rgba(255,255,255,.85); border-radius: 50%; color: var(--ink); background: rgba(255,255,255,.9); box-shadow: var(--shadow); font-size: 22px; cursor: pointer; }
+    .pause-button[hidden] { display: none; }
+    .pause-overlay { position: fixed; z-index: 200; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(24,20,42,.72); backdrop-filter: blur(7px); }
+    .pause-overlay[hidden] { display: none; }
+    .pause-card { width: min(430px, 100%); padding: 30px; border: 3px solid white; border-radius: 30px; background: #fff9ef; box-shadow: 0 24px 65px rgba(10,8,25,.42); text-align: center; }
+    .pause-card h2 { margin: 0 0 22px; font-size: clamp(25px, 6vw, 34px); }
+    .pause-actions { display: grid; gap: 12px; }
+    .pause-feedback { min-height: 22px; margin: 16px 0 0; color: #267660; font-weight: 900; }
+    body.game-paused .road::before, body.game-paused .night-message, body.game-paused .van, body.game-paused .collision-notice { animation-play-state: paused !important; }
+    @media (max-width: 820px) { .topbar { padding-right: 62px; } .night-top { padding-right: 54px; } }
 
     @keyframes float { 50% { transform: translateY(-9px) rotate(2deg); } }
     @keyframes mergePop { 50% { transform: scale(1.18) rotate(-5deg); } }
@@ -338,12 +395,42 @@
       <span class="start-paw" style="right:8%;bottom:12%;--r:21deg">🐾</span>
       <div class="start-card">
         <button class="logo-cat mascot-cat" type="button" aria-label="고양이와 인사하기" onpointerenter="greetCat(this)" onclick="greetCat(this, true)"></button>
-        <h1 id="gameTitle">냥냥 펫샵<br>딜리버리</h1>
+        <h1 id="gameTitle">냥냥 펫샵</h1>
         <p class="tagline">낮에는 만들고, 밤에는 달린다!</p>
         <p class="subcopy">고양이 손님의 주문을 만들고<br>밤에는 도시를 달려 직접 배송해 보세요.</p>
-        <button class="primary-btn start-btn" type="button" onclick="startGame()">가게 열기 🐾</button>
+        <div id="startActions" class="start-actions"></div>
         <p id="audioStartHint" role="status" hidden style="font-size:14px;color:#806959;margin:12px 0 0"></p>
       </div>
+    </section>
+
+    <section id="introScreen" class="screen" aria-labelledby="introTitle">
+      <article class="story-card">
+        <p class="story-kicker">WELCOME TO NYANGNYANG VILLAGE</p>
+        <h2 id="introTitle">지도에는 없는 작은 마을</h2>
+        <div class="story-divider" aria-hidden="true"></div>
+        <div class="story-copy">
+          <p>사람들의 도시 한편, 지도에는 나오지 않는 작은 마을 <strong>‘냥냥마을’</strong>.</p>
+          <p>한때 갈 곳을 잃었던 고양이들이 하나둘 모여 살기 시작하면서 만들어진 마을이에요. 지금은 여러 고양이들이 각자의 집을 꾸리고 살아가고 있답니다.</p>
+          <p>그런데 냥냥마을에는 한 가지 문제가 있어요.<br><strong>고양이에게 필요한 물건을 파는 가게가 없다는 것!</strong></p>
+          <p>그래서 마을 입구에 작은 가게 하나가 문을 열었습니다.<br><strong>「냥냥 펫샵」 🏪🐾</strong></p>
+          <p>낮에는 주민들의 주문을 받아 간식, 사료, 장난감, 캣타워를 만들고, 밤이 되면 직접 배송차를 몰고 냥냥마을 곳곳으로 배달합니다.</p>
+          <p><strong>오늘도 냥냥마을의 하루를 책임져볼까요?</strong></p>
+        </div>
+        <div class="story-actions">
+          <button class="primary-btn" type="button" onclick="openShopFromIntro()">🐾 냥냥 펫샵 OPEN</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="storyScreen" class="screen" aria-labelledby="dayStoryTitle">
+      <article class="story-card">
+        <p id="dayStoryKicker" class="story-kicker">☀️ DAY 1</p>
+        <h2 id="dayStoryTitle">오늘의 냥냥마을</h2>
+        <div id="dayStoryContent"></div>
+        <div class="story-actions">
+          <button id="dayStoryButton" class="primary-btn" type="button" onclick="enterDay()">가게 문 열기</button>
+        </div>
+      </article>
     </section>
 
     <section id="dayScreen" class="screen" aria-label="낮 펫샵 화면">
@@ -462,6 +549,19 @@
     </section>
   </main>
 
+  <button id="pauseButton" class="pause-button" type="button" aria-label="일시정지" onclick="pauseGame()" hidden>⏸</button>
+  <div id="pauseOverlay" class="pause-overlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
+    <div class="pause-card">
+      <h2 id="pauseTitle">⏸ 잠시 쉬어갈까요?</h2>
+      <div class="pause-actions">
+        <button id="resumeButton" class="primary-btn" type="button" onclick="resumeGame()">계속하기</button>
+        <button class="secondary-btn" type="button" onclick="saveGame()">저장하기</button>
+        <button class="secondary-btn" type="button" onclick="returnToMain()">메인으로</button>
+      </div>
+      <p id="pauseFeedback" class="pause-feedback" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -494,7 +594,7 @@
       { id: "tabby", label: "회색 줄무늬", names: ["후추", "고등어", "호두"] }
     ];
     const OBSTACLES = ["🚗", "🚧", "🕳️"];
-    const SCREEN_IDS = ["startScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
+    const SCREEN_IDS = ["startScreen", "introScreen", "storyScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
     const SCREEN_ASSETS = {
       day: [
         "assets/petshop-day-v06.webp",
@@ -534,11 +634,27 @@
       return Promise.all(SCREEN_ASSETS[group].map(preloadImage));
     }
 
+    const SAVE_KEY = "nyang-petshop-delivery-save";
+    const SAVE_VERSION = 1;
+
+    const VILLAGE_STORIES = [
+      "마을 입구의 작은 간판이 아침 햇살을 받아 반짝여요. 고양이 주민들이 새로 문을 연 가게를 궁금해하며 하나둘 골목으로 나오고 있어요.",
+      "포근한 바람이 지붕 위 빨래와 창가의 작은 화분을 살랑살랑 흔들어요. 냥냥마을의 느긋한 아침이 시작됐어요.",
+      "마을 광장 분수대 옆으로 참새들이 모여들었어요. 창문을 연 고양이들이 저마다 오늘의 날씨를 살피고 있답니다.",
+      "골목 끝 빵집에서 고소한 냄새가 퍼져 나와요. 산책을 나온 주민들의 발걸음도 평소보다 조금 가벼워 보여요.",
+      "밤새 내린 이슬이 돌담 위에서 반짝여요. 냥냥마을 주민들이 각자의 하루를 준비하며 불을 하나둘 켜고 있어요.",
+      "마을 게시판에 이번 주 소식이 새로 붙었어요. 지나가던 고양이들이 잠시 멈춰 이웃들의 안부를 읽고 있답니다.",
+      "구름 사이로 따뜻한 햇빛이 내려와 마을 지붕을 포근하게 덮어요. 오늘도 냥냥마을의 골목은 천천히 깨어나고 있어요."
+    ];
+
     let state;
     let toastTimer = null;
     let animationId = null;
     let nightView = null;
     let nightTimers = [];
+    let isPaused = false;
+    let pausedAt = 0;
+    let pauseReturnFocus = null;
 
     let lastCatGreeting = -Infinity;
     function greetCat(button, clicked = false) {
@@ -565,19 +681,205 @@
         customerSlots: [null, null, null],
         selectedOrderId: null,
         orderSequence: 0,
+        dayPane: "shop",
         lastResult: null,
-        night: null
+        night: null,
+        story: { introSeen: false, lastPresentedDay: 0 }
       };
+    }
+
+    function readSaveData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+        if (!saved || saved.version !== SAVE_VERSION || !saved.state || typeof saved.state !== "object") return null;
+        if (!Number.isFinite(saved.state.day) || !Number.isFinite(saved.state.money) || !Array.isArray(saved.state.customerSlots)) return null;
+        return saved;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function hasSaveData() {
+      return Boolean(readSaveData());
+    }
+
+    function clearSaveData() {
+      try { localStorage.removeItem(SAVE_KEY); } catch (_) {}
+      refreshStartScreen();
+    }
+
+    function refreshStartScreen() {
+      const actions = document.getElementById("startActions");
+      if (!actions) return;
+      actions.innerHTML = hasSaveData()
+        ? `<button class="primary-btn start-btn" type="button" onclick="continueGame()">이어하기</button><button class="secondary-btn start-btn" type="button" onclick="startGame()">새 게임</button>`
+        : `<button class="primary-btn start-btn" type="button" onclick="startGame()">새 게임</button>`;
+    }
+
+    function stateForSave() {
+      const snapshot = JSON.parse(JSON.stringify(state, (key, value) => key === "element" ? undefined : value));
+      if (snapshot.night) {
+        const referenceTime = isPaused ? pausedAt : performance.now();
+        snapshot.night.invulnerableRemaining = Math.max(0, (state.night.invulnerableUntil || 0) - referenceTime);
+        snapshot.night.invulnerableUntil = 0;
+        snapshot.night.lastFrame = 0;
+      }
+      return snapshot;
+    }
+
+    function saveGame() {
+      if (!state || state.phase === "start") return;
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify({ version: SAVE_VERSION, savedAt: Date.now(), state: stateForSave() }));
+        document.getElementById("pauseFeedback").textContent = `DAY ${state.day} 저장 완료!`;
+        refreshStartScreen();
+      } catch (_) {
+        document.getElementById("pauseFeedback").textContent = "저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.";
+      }
+    }
+
+    function hydrateState(savedState) {
+      const base = freshState();
+      const loaded = { ...base, ...savedState };
+      loaded.stats = { ...base.stats, ...(savedState.stats || {}) };
+      loaded.inventory = { ...base.inventory, ...(savedState.inventory || {}) };
+      loaded.inventoryDates = Object.fromEntries(Object.keys(MATERIALS).map(key => [key, Array.isArray(savedState.inventoryDates?.[key]) ? savedState.inventoryDates[key] : []]));
+      loaded.customerSlots = [0, 1, 2].map(index => savedState.customerSlots[index] || null);
+      return ensureStoryState(loaded, true);
+    }
+
+    function continueGame() {
+      const saved = readSaveData();
+      if (!saved) {
+        refreshStartScreen();
+        showToast("저장 데이터를 찾지 못했어요.");
+        return;
+      }
+      clearNightRuntime();
+      closePauseOverlay();
+      state = hydrateState(saved.state);
+      if (state.phase === "night" && state.night) {
+        restoreNight();
+      } else if (state.phase === "transition") {
+        setScreen("transitionScreen");
+        scheduleNightTimer(beginNight, 700);
+      } else if (state.phase === "result" && state.lastResult) {
+        renderResult();
+        setScreen("resultScreen");
+      } else if (state.phase === "gameover") {
+        renderGameOver();
+        setScreen("gameoverScreen");
+      } else if (state.phase === "intro" || state.phase === "story") {
+        showDayOpening();
+      } else {
+        state.phase = "day";
+        setDayPane(state.dayPane || "shop");
+        renderDay();
+        setScreen("dayScreen");
+      }
+      showToast(`DAY ${state.day} 저장 지점에서 이어합니다 🐾`);
+    }
+
+    function scheduleNightTimer(callback, delay) {
+      const timer = { id: null, callback, remaining: delay, startedAt: performance.now() };
+      timer.id = setTimeout(() => {
+        nightTimers = nightTimers.filter(item => item !== timer);
+        callback();
+      }, delay);
+      nightTimers.push(timer);
+      return timer;
+    }
+
+    function pauseNightTimers() {
+      const now = performance.now();
+      nightTimers.forEach(timer => {
+        clearTimeout(timer.id);
+        timer.id = null;
+        timer.remaining = Math.max(0, timer.remaining - (now - timer.startedAt));
+      });
+    }
+
+    function resumeNightTimers() {
+      nightTimers.forEach(timer => {
+        if (timer.id !== null) return;
+        timer.startedAt = performance.now();
+        timer.id = setTimeout(() => {
+          nightTimers = nightTimers.filter(item => item !== timer);
+          timer.callback();
+        }, timer.remaining);
+      });
+    }
+
+    function pauseGame() {
+      if (isPaused || !state || state.phase === "start") return;
+      isPaused = true;
+      pausedAt = performance.now();
+      pauseReturnFocus = document.activeElement;
+      if (animationId !== null) cancelAnimationFrame(animationId);
+      animationId = null;
+      pauseNightTimers();
+      document.body.classList.add("game-paused");
+      document.getElementById("pauseFeedback").textContent = "";
+      document.getElementById("pauseOverlay").hidden = false;
+      document.getElementById("pauseButton").hidden = true;
+      document.getElementById("resumeButton").focus();
+    }
+
+    function closePauseOverlay() {
+      isPaused = false;
+      pausedAt = 0;
+      document.body.classList.remove("game-paused");
+      document.getElementById("pauseOverlay").hidden = true;
+    }
+
+    function resumeGame() {
+      if (!isPaused) return;
+      const now = performance.now();
+      const pausedDuration = now - pausedAt;
+      closePauseOverlay();
+      document.getElementById("pauseButton").hidden = false;
+      if (state.night) {
+        state.night.lastFrame = now;
+        if (state.night.invulnerableUntil) state.night.invulnerableUntil += pausedDuration;
+      }
+      resumeNightTimers();
+      if (state.phase === "night" && state.night && !state.night.ending && animationId === null) animationId = requestAnimationFrame(updateNight);
+      if (pauseReturnFocus?.isConnected) pauseReturnFocus.focus();
+    }
+
+    function returnToMain() {
+      clearNightRuntime();
+      closePauseOverlay();
+      state = freshState();
+      refreshStartScreen();
+      setScreen("startScreen");
+    }
+
+    // Save Worktree에서 불러온 예전 저장 데이터도 안전하게 확장할 수 있는 기본 형태다.
+    function ensureStoryState(gameState, fromSavedGame = false) {
+      gameState.story = { introSeen: true, lastPresentedDay: 0, ...(gameState.story || {}) };
+      if (fromSavedGame) gameState.story.introSeen = true;
+      return gameState;
     }
 
     function setScreen(id) {
       window.gameSound?.setScene(id);
       SCREEN_IDS.forEach(screenId => document.getElementById(screenId).classList.toggle("active", screenId === id));
+      document.getElementById("pauseButton").hidden = id === "startScreen";
       window.scrollTo({ top: 0, behavior: id === "nightScreen" ? "instant" : "smooth" });
+      if (id === "introScreen" || id === "storyScreen") {
+        const heading = document.getElementById(id === "introScreen" ? "introTitle" : "dayStoryTitle");
+        heading.setAttribute("tabindex", "-1");
+        requestAnimationFrame(() => heading.focus({ preventScroll: true }));
+      }
     }
 
-    async function startGame() {
-      const button = document.querySelector(".start-btn");
+    async function startGame(force = false) {
+      if (!force && hasSaveData() && !window.confirm("기존 저장 데이터를 지우고 새 게임을 시작할까요?")) return;
+      clearSaveData();
+      clearNightRuntime();
+      closePauseOverlay();
+      const button = document.querySelector('.start-btn[onclick="startGame()"]');
       if (button.disabled) return;
       const label = button.textContent;
       button.disabled = true;
@@ -590,10 +892,8 @@
       firstProducts.forEach((productId, slotIndex) => {
         state.customerSlots[slotIndex] = createOrder(slotIndex, productId);
       });
-      state.phase = "day";
-      renderDay();
-      setScreen("dayScreen");
-      showToast("DAY 1! 고양이 손님들의 주문을 준비해 주세요 🐾");
+      state.phase = "intro";
+      setScreen("introScreen");
       document.getElementById("startScreen").removeAttribute("aria-busy");
       button.textContent = label;
       button.disabled = false;
@@ -601,8 +901,73 @@
       else setTimeout(() => prepareImages("night"), 0);
     }
 
+    function openShopFromIntro() {
+      if (!state || state.phase !== "intro") return;
+      state.story.introSeen = true;
+      showDayOpening();
+    }
+
+    function dayVillageStory(day) {
+      return VILLAGE_STORIES[(Math.max(1, day) - 1) % VILLAGE_STORIES.length];
+    }
+
+    function previousDayStory(result) {
+      if (!result) return null;
+      const delivered = result.delivered || [];
+      const delayed = result.delayed || [];
+      const cancelled = result.cancelled || [];
+      const parts = [];
+
+      if (delivered.length === 1) {
+        const order = delivered[0];
+        parts.push(`어젯밤 ${order.customerName}네 ${PRODUCTS[order.productId].name} 배송이 무사히 끝났어요.`);
+      } else if (delivered.length > 1) {
+        const homes = delivered.map(order => `${order.customerName}네`).join(", ");
+        parts.push(`어젯밤 ${homes} 배송이 무사히 끝났어요.`);
+      }
+
+      if (delayed.length === 1) {
+        parts.push(`${delayed[0].customerName}의 주문은 아직 배송을 기다리고 있어요. 오늘 다시 준비할 수 있어요.`);
+      } else if (delayed.length > 1) {
+        parts.push(`${delayed.map(order => order.customerName).join(", ")}의 주문은 아직 배송을 기다리고 있어요. 오늘 다시 준비할 수 있어요.`);
+      }
+
+      if (cancelled.length === 1) {
+        parts.push(`${cancelled[0].customerName}의 주문은 오래 기다린 끝에 취소됐어요. 가게 앞이 잠시 조용해졌답니다.`);
+      } else if (cancelled.length > 1) {
+        parts.push(`${cancelled.map(order => order.customerName).join(", ")}의 주문은 오래 기다린 끝에 취소됐어요. 가게 앞이 잠시 조용해졌답니다.`);
+      }
+
+      if (!parts.length) parts.push("어젯밤에는 완료된 배송이 없었어요. 가게는 오늘의 새 출발을 차분히 준비하고 있어요.");
+      return parts.join(" ");
+    }
+
+    function showDayOpening() {
+      if (!state) return;
+      ensureStoryState(state);
+      state.phase = "story";
+      state.story.lastPresentedDay = state.day;
+      document.getElementById("dayStoryKicker").textContent = `☀️ DAY ${state.day}`;
+      const sections = [`<section class="story-section"><h3>오늘의 냥냥마을</h3><p>${dayVillageStory(state.day)}</p></section>`];
+      const yesterday = previousDayStory(state.lastResult);
+      if (yesterday) sections.push(`<section class="story-section result"><h3>어젯밤, 그 후</h3><p>${yesterday}</p></section>`);
+      document.getElementById("dayStoryContent").innerHTML = sections.join("");
+      document.getElementById("dayStoryButton").textContent = `DAY ${state.day} 시작하기`;
+      setScreen("storyScreen");
+    }
+
+    function enterDay() {
+      if (!state || state.phase !== "story") return;
+      state.phase = "day";
+      state.selectedOrderId = null;
+      renderDay();
+      setScreen("dayScreen");
+      showToast(`DAY ${state.day}! 오늘의 주문을 준비해 주세요 🐾`);
+    }
+
     function setDayPane(pane) {
       if (pane !== 'shop' && pane !== 'craft') return;
+      if (state) state.dayPane = pane;
       const workbench = document.getElementById('dayWorkbench');
       workbench.dataset.pane = pane;
       document.getElementById('shopPaneButton').setAttribute('aria-pressed', String(pane === 'shop'));
@@ -610,7 +975,6 @@
     }
 
     function restartGame() {
-      clearNightRuntime();
       startGame();
     }
 
@@ -778,7 +1142,14 @@
       if (order.status === "ready") {
         panel.innerHTML = `
           <h2>✨ 포근포근 조합대</h2>
-          <div class="craft-empty" style="height:165px"><div><span style="font-size:58px">🎁</span><br><strong>✨ ${order.customerName}의 ${product.name} 완성!</strong><br><small>자동으로 배송 대기 선반에 올렸어요.</small></div></div>
+          <div class="craft-empty craft-complete" role="status">
+            <div class="craft-complete-gift" aria-hidden="true">🎁</div>
+            <div class="craft-complete-title">
+              <span class="craft-complete-sparkle" aria-hidden="true">✨</span>
+              <strong>${order.customerName}의 ${product.name} 완성!</strong>
+            </div>
+            <small class="craft-complete-description">자동으로 배송 대기 선반에 올렸어요.</small>
+          </div>
           ${inventoryMarkup(null)}
           <div class="craft-fx" aria-hidden="true"></div>`;
         return;
@@ -919,7 +1290,7 @@
       button.textContent = label;
       button.disabled = false;
       button.removeAttribute("aria-busy");
-      nightTimers.push(setTimeout(beginNight, 1350));
+      scheduleNightTimer(beginNight, 1350);
     }
 
     // Gameplay distances are independent of CSS pixels and viewport height.
@@ -991,7 +1362,7 @@
       renderNightMotion(0);
       if (!loaded.length) {
         showNightMessage("실은 상품이 없어요… 오늘 주문은 미배송 처리돼요");
-        nightTimers.push(setTimeout(endNight, 1400));
+        scheduleNightTimer(endNight, 1400);
         return;
       }
       document.getElementById("timingText").textContent = "🏁 장애물을 피해 달려요 · 집에 도착하면 SPACE!";
@@ -1001,8 +1372,71 @@
       animationId = requestAnimationFrame(updateNight);
     }
 
+    function makeTargetElement(target) {
+      const order = getOrder(target.orderId);
+      const product = order ? PRODUCTS[order.productId] : null;
+      const element = document.createElement("div");
+      element.className = "road-object delivery-gate";
+      element.style.setProperty("--lane", target.lane);
+      element.innerHTML = `<span class="gate-cat" aria-hidden="true">🏠</span><span class="gate-label"><span>${order ? `${order.customerName}네` : "배송지"}</span><span>${product ? `${product.icon} 배송지` : "배송 완료"}</span></span>`;
+      document.getElementById("nightObjects").appendChild(element);
+      return element;
+    }
+
+    function makeObstacleElement(obstacle) {
+      const element = document.createElement("div");
+      element.className = `road-object obstacle${obstacle.hit ? " struck" : ""}`;
+      element.style.setProperty("--lane", obstacle.lane);
+      element.textContent = obstacle.kind || "🚧";
+      document.getElementById("nightObjects").appendChild(element);
+      return element;
+    }
+
+    function restoreNight() {
+      const n = state.night;
+      state.phase = "night";
+      n.difficulty = n.difficulty || nightDifficulty(state.day);
+      n.loadedOrderIds = Array.isArray(n.loadedOrderIds) ? n.loadedOrderIds : [];
+      n.obstacles = Array.isArray(n.obstacles) ? n.obstacles : [];
+      n.departingTargets = Array.isArray(n.departingTargets) ? n.departingTargets : [];
+      n.lane = Number.isFinite(n.lane) ? n.lane : 1;
+      n.visualLane = Number.isFinite(n.visualLane) ? n.visualLane : n.lane;
+      n.distance = Number.isFinite(n.distance) ? n.distance : 0;
+      n.invulnerableUntil = performance.now() + Math.max(0, n.invulnerableRemaining || 0);
+      delete n.invulnerableRemaining;
+      n.lastFrame = performance.now();
+      document.getElementById("nightObjects").innerHTML = "";
+      setScreen("nightScreen");
+      nightView = {
+        road: document.getElementById("road"), van: document.getElementById("van"),
+        scenery: document.getElementById("nightScenery"), panel: document.querySelector(".timing-panel"),
+        needle: document.getElementById("timingNeedle"), button: document.getElementById("throwButton"),
+        text: document.getElementById("timingText"), reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches
+      };
+      document.getElementById("van").style.setProperty("--lane", n.lane);
+      const timingZone = document.querySelector(".timing-zone");
+      timingZone.style.left = `${n.difficulty.throwStart * 100}%`;
+      timingZone.style.width = `${(n.difficulty.throwEnd - n.difficulty.throwStart) * 100}%`;
+      n.obstacles.forEach(obstacle => { obstacle.element = makeObstacleElement(obstacle); });
+      n.departingTargets.forEach(target => { target.element = makeTargetElement(target); });
+      if (n.currentTarget) n.currentTarget.element = makeTargetElement(n.currentTarget);
+      if (!n.currentTarget && n.mode === "delivery") n.mode = "racing";
+      measureNightRoad();
+      renderNightMotion(0);
+      updateNightHud();
+      updateDeliveryPrompt();
+      if (n.currentTarget) nightView.needle.style.transform = `translate3d(${Math.min(99, houseProgress(n.currentTarget) * 100)}%,0,0)`;
+      if (n.ending || !n.loadedOrderIds.length) {
+        n.ending = true;
+        scheduleNightTimer(endNight, 500);
+      } else {
+        n.ending = false;
+        animationId = requestAnimationFrame(updateNight);
+      }
+    }
+
     function moveVan(direction) {
-      if (!state || state.phase !== "night" || !state.night || state.night.ending) return;
+      if (isPaused || !state || state.phase !== "night" || !state.night || state.night.ending) return;
       const previousLane = state.night.lane;
       state.night.lane = Math.max(0, Math.min(2, state.night.lane + direction));
       if (previousLane !== state.night.lane) window.gameSound?.sfx("move");
@@ -1119,17 +1553,15 @@
       const lanes = [0, 1, 2].filter(lane => lane !== state.night.nextHouseLane && !houses.some(house => house.lane === lane));
       if (!lanes.length) return;
       const lane = lanes[Math.floor(Math.random() * lanes.length)];
-      const element = document.createElement("div");
-      element.className = "road-object obstacle";
-      element.style.setProperty("--lane", lane);
-      element.textContent = OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
-      document.getElementById("nightObjects").appendChild(element);
-      state.night.obstacles.push({ lane, y: -75, speed: state.night.difficulty.speed, element, hit: false });
+      const kind = OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
+      const obstacle = { lane, y: -75, speed: state.night.difficulty.speed, kind, hit: false };
+      obstacle.element = makeObstacleElement(obstacle);
+      state.night.obstacles.push(obstacle);
       positionRoadObject(state.night.obstacles.at(-1));
     }
 
     function updateNight(now) {
-      if (state.phase !== "night") return;
+      if (isPaused || state.phase !== "night") return;
       const dt = Math.min((now - state.night.lastFrame) / 1000, .05);
       state.night.lastFrame = now;
       renderNightMotion(dt);
@@ -1174,7 +1606,7 @@
     }
 
     function throwParcel() {
-      if (!state || state.phase !== "night" || state.night.ending) return;
+      if (isPaused || !state || state.phase !== "night" || state.night.ending) return;
       const target = state.night.currentTarget;
       if (!target || state.night.mode !== "delivery") return;
       if (!isAtHouseLane(target)) return;
@@ -1254,14 +1686,14 @@
       // Unsupported devices keep the existing visual and audio feedback.
       try { if (!document.hidden && typeof navigator.vibrate === "function") navigator.vibrate([80, 40, 100]); } catch (_) {}
       updateNightHud();
-      nightTimers.push(setTimeout(() => {
+      scheduleNightTimer(() => {
         // Do not clear feedback belonging to a more recent collision.
         if (state.night && state.night.invulnerableUntil === now + 800) {
           van.classList.remove("hit");
           road.classList.remove("collision");
           document.getElementById("collisionNotice").textContent = "";
         }
-      }, 1200));
+      }, 1200);
     }
 
     function removeRoadObject(item) {
@@ -1271,7 +1703,7 @@
     function finishNightSoon() {
       if (state.night.ending) return;
       state.night.ending = true;
-      nightTimers.push(setTimeout(endNight, 900));
+      scheduleNightTimer(endNight, 900);
     }
 
     function showNightMessage(message) {
@@ -1294,7 +1726,7 @@
     function clearNightRuntime() {
       if (animationId !== null) cancelAnimationFrame(animationId);
       animationId = null;
-      nightTimers.forEach(timer => clearTimeout(timer));
+      nightTimers.forEach(timer => clearTimeout(timer.id));
       nightTimers = [];
     }
 
@@ -1409,11 +1841,8 @@
         setScreen("gameoverScreen");
         return;
       }
-      state.phase = "day";
       state.selectedOrderId = null;
-      renderDay();
-      setScreen("dayScreen");
-      showToast(`DAY ${state.day}! 이월 고객을 먼저 챙겨 주세요 🐾`);
+      showDayOpening();
     }
 
     function renderGameOver() {
@@ -1440,7 +1869,12 @@
     });
 
     document.addEventListener("keydown", event => {
-      if (!state || state.phase !== "night") return;
+      if (event.key === "Escape") {
+        if (isPaused) resumeGame();
+        else if (state && state.phase !== "start") pauseGame();
+        return;
+      }
+      if (isPaused || !state || state.phase !== "night") return;
       const key = event.key.toLowerCase();
       if (event.code === "Space") { event.preventDefault(); if (!event.repeat) throwParcel(); return; }
       if (["arrowleft", "arrowright", "a", "d"].includes(key)) event.preventDefault();
@@ -1459,6 +1893,7 @@
 
     state = freshState();
     prepareImages("day");
+    refreshStartScreen();
   </script>
   <div id="soundControl" class="sound-toggle">
     <div id="volumePanel" hidden style="position:absolute;right:0;bottom:calc(100% + 10px);padding:12px;background:#fff3de;border:2px solid #ba936b;border-radius:14px;white-space:nowrap;box-shadow:0 3px 10px #34253d40">
@@ -1469,7 +1904,7 @@
     <button id="soundToggle" class="speaker-icon" type="button" aria-expanded="false" aria-controls="volumePanel" aria-label="소리 켜짐 · 볼륨 조절 열기">🔊</button>
   </div>
   <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
-<script src="petshop-audio-v12.js?v=44"></script>
+<script src="petshop-audio-v12.js?v=55"></script>
 <script src="petshop-illustrations-v52.js"></script>
 </body>
 </html>

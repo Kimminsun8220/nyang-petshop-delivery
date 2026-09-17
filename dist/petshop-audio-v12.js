@@ -24,7 +24,7 @@ window.gameSound = (() => {
   }
   dayMusic.addEventListener('playing', () => audioHint());
   function setScene(screen) {
-    const nextDay = screen === 'startScreen' || screen === 'dayScreen' || screen === 'resultScreen';
+    const nextDay = screen === 'startScreen' || screen === 'introScreen' || screen === 'storyScreen' || screen === 'dayScreen' || screen === 'resultScreen';
     const nextNight = screen === 'transitionScreen' || screen === 'nightScreen';
     if (nextDay === dayScene && nextNight === nightScene) return;
     dayScene = nextDay;
