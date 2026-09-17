@@ -10,11 +10,11 @@ window.gameSound = (() => {
   let nightScene = false;
   const nightMusic = new Audio('assets/night-music-v34.mp3');
   nightMusic.loop = true;
-  nightMusic.preload = 'auto';
+  nightMusic.preload = 'none';
   nightMusic.volume = .45 * volume;
   const dayMusic = new Audio('assets/day-music-v32.mp3');
   dayMusic.loop = true;
-  dayMusic.preload = 'auto';
+  dayMusic.preload = 'none';
   dayMusic.volume = .45 * volume;
   function audioHint(message = '') {
     const hint = document.getElementById('audioStartHint');

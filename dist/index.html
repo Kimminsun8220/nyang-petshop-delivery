@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fff4e7">
   <title>냥냥 펫샵 딜리버리</title>
+  <link rel="preload" as="image" href="assets/mascot-stretch-v26.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/petshop-day-v06.webp" fetchpriority="low">
   <style>
     :root {
       --ink: #44364d;
@@ -375,7 +377,7 @@
     .reputation-help:hover::details-content{content-visibility:visible}
     .reputation-tip{display:none;position:absolute;right:0;top:100%;z-index:80;width:260px;max-width:75vw;padding:12px;background:#fff7e8;color:#62452e;border:2px solid #bf956e;border-radius:12px;box-shadow:0 6px 18px #50342133;text-align:left;font-size:14px;font-weight:400;line-height:1.6}
     .reputation-help[open] .reputation-tip,.reputation-help:hover .reputation-tip,.reputation-help:focus-within .reputation-tip{display:block}
-    .logo-cat.mascot-cat{display:block;width:190px;height:190px;max-width:55vw;border:0;padding:0;background:transparent url('assets/mascot-stretch-v26.png') 0 0/400% 200% no-repeat;cursor:pointer;animation:none;transform:none}
+    .logo-cat.mascot-cat{display:block;width:190px;height:190px;max-width:55vw;border:0;padding:0;background:transparent url('assets/mascot-stretch-v26.webp') 0 0/400% 200% no-repeat;cursor:pointer;animation:none;transform:none}
     .logo-cat.mascot-cat.stretching{animation:catStretch 2.6s steps(1,end)}
     @keyframes catStretch{0%,100%{background-position:0 0}10%{background-position:33.333333% 0}22%{background-position:66.666667% 0}34%{background-position:100% 0}46%{background-position:0 100%}62%{background-position:33.333333% 100%}78%{background-position:66.666667% 100%}90%{background-position:100% 100%}}
     @media(prefers-reduced-motion:reduce){.logo-cat.mascot-cat.stretching{animation:none}}
@@ -384,7 +386,7 @@
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundB.ttf') format('truetype');font-weight:600 700;font-display:swap}
     @font-face{font-family:'Petshop Nanum Round';src:url('assets/NanumSquareRoundEB.ttf') format('truetype');font-weight:800 1000;font-display:swap}
   </style>
-  <link rel="stylesheet" href="cozy-v06.css?v=53">
+  <link rel="stylesheet" href="cozy-v06.css?v=54">
 </head>
 <body>
   <main>
@@ -476,7 +478,7 @@
               <h2 id="readyTitle">📦 배송 대기 선반</h2>
               <div id="readyShelf" class="ready-shelf"></div>
               <div class="night-start-wrap">
-                <button class="primary-btn" type="button" onclick="startNight()">밤 배송 시작 🚐💨</button>
+                <button id="startNightButton" class="primary-btn" type="button" onclick="startNight()">밤 배송 시작 🚐💨</button>
                 <p id="nightWarning" class="night-warning"></p>
               </div>
             </section>
@@ -526,7 +528,7 @@
     <section id="resultScreen" class="screen" aria-live="polite">
       <div class="result-card">
         <div class="shop-closed-label">🌙 오늘의 영업 종료 · CLOSED</div>
-        <div class="result-icon settlement-art"><img src="assets/settlement-cat-v50.png" alt="정산표 옆에 앉아 있는 고양이" width="144" height="96"></div>
+        <div class="result-icon settlement-art"><img src="assets/settlement-cat-v50.webp" alt="정산표 옆에 앉아 있는 고양이" width="144" height="96" decoding="async"></div>
         <h2 id="resultTitle">오늘의 정산</h2>
         <p id="resultLead"></p>
         <div id="resultSummary" class="result-summary"></div>
@@ -593,6 +595,45 @@
     ];
     const OBSTACLES = ["🚗", "🚧", "🕳️"];
     const SCREEN_IDS = ["startScreen", "introScreen", "storyScreen", "dayScreen", "transitionScreen", "nightScreen", "resultScreen", "gameoverScreen"];
+    const SCREEN_ASSETS = {
+      day: [
+        "assets/petshop-day-v06.webp",
+        "assets/customer-cats-v44.webp",
+        "assets/ui-goods-v52.webp",
+        "assets/petshop-sprites-sad-v08.webp"
+      ],
+      night: [
+        "assets/petshop-night-v06.webp",
+        "assets/petshop-sprites-v06.webp",
+        "assets/ui-actions-v52.webp"
+      ],
+      result: [
+        "assets/petshop-closed-v11.webp",
+        "assets/settlement-cat-v50.webp"
+      ]
+    };
+    const imagePreloads = new Map();
+
+    function preloadImage(src) {
+      if (imagePreloads.has(src)) return imagePreloads.get(src);
+      const promise = new Promise(resolve => {
+        const image = new Image();
+        image.decoding = "async";
+        image.onload = async () => {
+          try { if (image.decode) await image.decode(); } catch (_) {}
+          resolve(true);
+        };
+        image.onerror = () => resolve(false);
+        image.src = src;
+      });
+      imagePreloads.set(src, promise);
+      return promise;
+    }
+
+    function prepareImages(group) {
+      return Promise.all(SCREEN_ASSETS[group].map(preloadImage));
+    }
+
     const SAVE_KEY = "nyang-petshop-delivery-save";
     const SAVE_VERSION = 1;
 
@@ -833,11 +874,18 @@
       }
     }
 
-    function startGame(force = false) {
+    async function startGame(force = false) {
       if (!force && hasSaveData() && !window.confirm("기존 저장 데이터를 지우고 새 게임을 시작할까요?")) return;
       clearSaveData();
       clearNightRuntime();
       closePauseOverlay();
+      const button = document.querySelector('.start-btn[onclick="startGame()"]');
+      if (button.disabled) return;
+      const label = button.textContent;
+      button.disabled = true;
+      button.textContent = "가게 준비 중…";
+      document.getElementById("startScreen").setAttribute("aria-busy", "true");
+      await prepareImages("day");
       state = freshState();
       setDayPane('shop');
       const firstProducts = ["snack", "food", "toy"];
@@ -846,6 +894,11 @@
       });
       state.phase = "intro";
       setScreen("introScreen");
+      document.getElementById("startScreen").removeAttribute("aria-busy");
+      button.textContent = label;
+      button.disabled = false;
+      if ("requestIdleCallback" in window) requestIdleCallback(() => prepareImages("night"), { timeout: 1800 });
+      else setTimeout(() => prepareImages("night"), 0);
     }
 
     function openShopFromIntro() {
@@ -1222,10 +1275,21 @@
       setTimeout(() => item.remove(), 650);
     }
 
-    function startNight() {
+    async function startNight() {
       if (state.phase !== "day") return;
+      const button = document.getElementById("startNightButton");
+      if (button.disabled) return;
+      const label = button.textContent;
+      button.disabled = true;
+      button.textContent = "밤길 준비 중…";
+      button.setAttribute("aria-busy", "true");
+      await prepareImages("night");
       state.phase = "transition";
       setScreen("transitionScreen");
+      prepareImages("result");
+      button.textContent = label;
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
       scheduleNightTimer(beginNight, 1350);
     }
 
@@ -1828,6 +1892,7 @@
     });
 
     state = freshState();
+    prepareImages("day");
     refreshStartScreen();
   </script>
   <div id="soundControl" class="sound-toggle">
@@ -1839,7 +1904,7 @@
     <button id="soundToggle" class="speaker-icon" type="button" aria-expanded="false" aria-controls="volumePanel" aria-label="소리 켜짐 · 볼륨 조절 열기">🔊</button>
   </div>
   <style>.speaker-icon{position:relative;border:0;background:transparent;font-size:22px;min-width:36px;min-height:36px;cursor:pointer}.speaker-icon.is-muted::after{content:'';position:absolute;left:4px;right:4px;top:50%;height:3px;background:#d52e38;transform:rotate(-45deg);border-radius:3px;box-shadow:0 0 0 1px #fff3de}</style>
-<script src="petshop-audio-v12.js?v=54"></script>
+<script src="petshop-audio-v12.js?v=55"></script>
 <script src="petshop-illustrations-v52.js"></script>
 </body>
 </html>
