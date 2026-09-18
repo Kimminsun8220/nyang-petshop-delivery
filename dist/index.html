@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#fff4e7">
   <title>냥냥 펫샵 딜리버리</title>
   <link rel="preload" as="image" href="assets/mascot-stretch-v26.webp" fetchpriority="high">
-  <link rel="preload" as="image" href="assets/petshop-day-v06.webp" fetchpriority="low">
+  <link rel="preload" as="image" href="assets/petshop-day-v06.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/intro-village-v01.webp" fetchpriority="high">
   <style>
     :root {
       --ink: #44364d;
@@ -50,6 +51,29 @@
         linear-gradient(155deg, #fff7df 0%, #ffe5ed 48%, #dff7ef 100%);
     }
     #startScreen.active { display: grid; place-items: center; padding: 24px; }
+    .boot-status {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 17px;
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(255,255,255,.88);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+      opacity: 0;
+      visibility: hidden;
+    }
+    body.app-booting #startScreen .start-card,
+    body.app-booting #startScreen .start-paw { opacity: 0; pointer-events: none; }
+    body.app-booting #startScreen {
+      background: linear-gradient(155deg, #fff7df 0%, #ffe5ed 48%, #dff7ef 100%) !important;
+    }
+    body.app-booting .boot-status { animation: revealBootStatus 0s linear .15s forwards; }
+    body:not(.app-booting) .boot-status { display: none; }
+    @keyframes revealBootStatus { to { opacity: 1; visibility: visible; } }
     .start-card {
       width: min(680px, 100%);
       padding: clamp(28px, 7vw, 62px);
@@ -72,6 +96,7 @@
       border-radius: 16px;
       padding: 13px 22px;
       cursor: pointer;
+      touch-action: manipulation;
       font-weight: 900;
       transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
     }
@@ -79,6 +104,12 @@
     .secondary-btn { color: var(--ink); background: #fff; border: 2px solid #eadde4; box-shadow: 0 6px 0 #e7d9df; }
     .primary-btn:hover, .secondary-btn:hover { transform: translateY(-2px); filter: brightness(1.03); }
     .primary-btn:active, .secondary-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #c84f70; }
+    .primary-btn:disabled, .secondary-btn:disabled {
+      opacity: .72;
+      cursor: wait;
+      transform: none;
+      filter: saturate(.85);
+    }
     .start-btn { margin-top: 18px; min-width: 210px; font-size: 19px; }
     .start-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
     .start-actions .start-btn { margin-top: 0; }
@@ -110,7 +141,7 @@
       background-position: center;
       background-size: cover;
       transform: scale(1.02);
-      transition: opacity .65s ease;
+      transition: opacity .34s ease-out;
       will-change: opacity;
     }
     .story-backdrop.active { opacity: 1; }
@@ -438,9 +469,10 @@
   </style>
   <link rel="stylesheet" href="cozy-v06.css?v=54">
 </head>
-<body>
+<body class="app-booting">
   <main>
     <section id="startScreen" class="screen active" aria-labelledby="gameTitle">
+      <div class="boot-status" role="status" aria-live="polite"><span aria-hidden="true">🐾</span> 가게를 준비하고 있어요…</div>
       <span class="start-paw" style="left:7%;top:10%;--r:-18deg">🐾</span>
       <span class="start-paw" style="right:8%;bottom:12%;--r:21deg">🐾</span>
       <div class="start-card">
@@ -688,24 +720,47 @@
     };
     const imagePreloads = new Map();
 
-    function preloadImage(src) {
-      if (imagePreloads.has(src)) return imagePreloads.get(src);
+    function preloadImage(src, priority = "auto") {
+      const cached = imagePreloads.get(src);
+      if (cached) {
+        if (priority === "high" && "fetchPriority" in cached.image) cached.image.fetchPriority = "high";
+        return cached.promise;
+      }
+
+      const image = new Image();
+      image.decoding = "async";
+      if ("fetchPriority" in image) image.fetchPriority = priority;
       const promise = new Promise(resolve => {
-        const image = new Image();
-        image.decoding = "async";
         image.onload = async () => {
           try { if (image.decode) await image.decode(); } catch (_) {}
           resolve(true);
         };
-        image.onerror = () => resolve(false);
+        image.onerror = () => {
+          imagePreloads.delete(src);
+          resolve(false);
+        };
         image.src = src;
       });
-      imagePreloads.set(src, promise);
+      imagePreloads.set(src, { image, promise });
       return promise;
     }
 
-    function prepareImages(group) {
-      return Promise.all(SCREEN_ASSETS[group].map(preloadImage));
+    function prepareImages(group, priority = "auto") {
+      return Promise.all(SCREEN_ASSETS[group].map(src => preloadImage(src, priority)));
+    }
+
+    async function prepareImagesInSequence(group) {
+      for (const src of SCREEN_ASSETS[group]) await preloadImage(src, "low");
+    }
+
+    function nextFrame() {
+      return new Promise(resolve => requestAnimationFrame(resolve));
+    }
+
+    function showDelayedButtonStatus(button, label) {
+      return setTimeout(() => {
+        if (button?.disabled) button.textContent = label;
+      }, 150);
     }
 
     const SAVE_KEY = "nyang-petshop-delivery-save";
@@ -764,6 +819,8 @@
     let introStoryIndex = 0;
     let introBackdropLayer = 1;
     let dayStoryBackdropLayer = 1;
+    let introTransitioning = false;
+    let dayTransitioning = false;
 
     let lastCatGreeting = -Infinity;
     function greetCat(button, clicked = false) {
@@ -987,16 +1044,25 @@
 
     async function startGame(force = false) {
       if (!force && hasSaveData() && !window.confirm("기존 저장 데이터를 지우고 새 게임을 시작할까요?")) return;
-      clearSaveData();
       clearNightRuntime();
       closePauseOverlay();
       const button = document.querySelector('.start-btn[onclick="startGame()"]');
       if (button.disabled) return;
       const label = button.textContent;
       button.disabled = true;
-      button.textContent = "가게 준비 중…";
+      const loadingTimer = showDelayedButtonStatus(button, "가게 준비 중…");
       document.getElementById("startScreen").setAttribute("aria-busy", "true");
-      await Promise.all([prepareImages("day"), preloadImage(INTRO_STORY[0].image)]);
+      const loaded = await preloadImage(INTRO_STORY[0].image, "high");
+      clearTimeout(loadingTimer);
+      if (!loaded) {
+        document.getElementById("startScreen").removeAttribute("aria-busy");
+        button.textContent = label;
+        button.disabled = false;
+        showToast("첫 이야기를 불러오지 못했어요. 다시 시도해 주세요.");
+        return;
+      }
+
+      clearSaveData();
       state = freshState();
       setDayPane('shop');
       const firstProducts = ["snack", "food", "toy"];
@@ -1004,103 +1070,181 @@
         state.customerSlots[slotIndex] = createOrder(slotIndex, productId);
       });
       state.phase = "intro";
-      renderIntroStep(0);
+      await commitIntroStep(0);
       setScreen("introScreen");
-      prepareImages("intro");
       document.getElementById("startScreen").removeAttribute("aria-busy");
       button.textContent = label;
       button.disabled = false;
-      if ("requestIdleCallback" in window) requestIdleCallback(() => prepareImages("night"), { timeout: 1800 });
-      else setTimeout(() => prepareImages("night"), 0);
     }
 
-    function renderIntroStep(index) {
-      introStoryIndex = Math.max(0, Math.min(INTRO_STORY.length - 1, index));
-      const scene = INTRO_STORY[introStoryIndex];
-      const copy = document.getElementById("introStoryCopy");
-      copy.classList.remove("is-entering");
-      copy.innerHTML = `<p>${scene.copy}</p>`;
-      void copy.offsetWidth;
-      copy.classList.add("is-entering");
-      renderIntroBackdrop(scene, introStoryIndex);
-      document.getElementById("introProgressLabel").textContent = `${introStoryIndex + 1} / ${INTRO_STORY.length}`;
-      document.getElementById("introProgress").innerHTML = INTRO_STORY.map((_, step) => `<span class="${step === introStoryIndex ? "active" : ""}"></span>`).join("");
-      document.getElementById("introNextButton").textContent = introStoryIndex === INTRO_STORY.length - 1
-        ? "🐾 냥냥 펫샵 OPEN"
-        : "다음 이야기";
+    function introButtonLabel(index) {
+      return index === INTRO_STORY.length - 1 ? "🐾 냥냥 펫샵 OPEN" : "다음 이야기";
     }
 
-    async function renderIntroBackdrop(scene, expectedIndex) {
-      const loaded = await preloadImage(scene.image);
-      if (!loaded || introStoryIndex !== expectedIndex) return;
+    function preloadFollowingIntroScene(index) {
+      const following = INTRO_STORY[index + 1];
+      if (following) {
+        preloadImage(following.image, "low");
+      } else if (state) {
+        preloadImage(dayVillageScene(state.day).image, "low");
+      }
+    }
+
+    async function commitIntroStep(index) {
+      const targetIndex = Math.max(0, Math.min(INTRO_STORY.length - 1, index));
+      const scene = INTRO_STORY[targetIndex];
       const nextLayer = introBackdropLayer === 0 ? 1 : 0;
       const next = document.getElementById(nextLayer === 0 ? "introBackdropA" : "introBackdropB");
       const current = document.getElementById(introBackdropLayer === 0 ? "introBackdropA" : "introBackdropB");
+      const copy = document.getElementById("introStoryCopy");
+      copy.classList.remove("is-entering");
+      void copy.offsetWidth;
       next.style.backgroundImage = `url("${scene.image}")`;
       next.style.backgroundPosition = scene.position;
-      requestAnimationFrame(() => {
-        next.classList.add("active");
-        current.classList.remove("active");
-        introBackdropLayer = nextLayer;
-      });
+      await nextFrame();
+      copy.innerHTML = `<p>${scene.copy}</p>`;
+      copy.classList.add("is-entering");
+      document.getElementById("introProgressLabel").textContent = `${targetIndex + 1} / ${INTRO_STORY.length}`;
+      document.getElementById("introProgress").innerHTML = INTRO_STORY.map((_, step) => `<span class="${step === targetIndex ? "active" : ""}"></span>`).join("");
+      document.getElementById("introNextButton").textContent = introButtonLabel(targetIndex);
+      next.classList.add("active");
+      current.classList.remove("active");
+      introStoryIndex = targetIndex;
+      introBackdropLayer = nextLayer;
+      preloadFollowingIntroScene(targetIndex);
     }
 
-    function advanceIntro(event) {
-      if (!state || state.phase !== "intro") return;
+    async function advanceIntro(event) {
+      if (!state || state.phase !== "intro" || introTransitioning) return;
       if (event?.type === "click" && event.button !== 0) return;
-      if (introStoryIndex < INTRO_STORY.length - 1) {
-        renderIntroStep(introStoryIndex + 1);
-        return;
+      const button = document.getElementById("introNextButton");
+      const currentLabel = introButtonLabel(introStoryIndex);
+      introTransitioning = true;
+      button.disabled = true;
+      document.getElementById("introScreen").setAttribute("aria-busy", "true");
+      const loadingTimer = showDelayedButtonStatus(button, "이야기 준비 중…");
+
+      if (introStoryIndex >= INTRO_STORY.length - 1) {
+        const opened = await openShopFromIntro(button);
+        clearTimeout(loadingTimer);
+        document.getElementById("introScreen").removeAttribute("aria-busy");
+        button.textContent = currentLabel;
+        button.disabled = false;
+        introTransitioning = false;
+        return opened;
       }
-      openShopFromIntro();
+
+      const targetIndex = introStoryIndex + 1;
+      const loaded = await preloadImage(INTRO_STORY[targetIndex].image, "high");
+      clearTimeout(loadingTimer);
+      if (loaded) {
+        await commitIntroStep(targetIndex);
+      } else {
+        showToast("다음 이야기를 불러오지 못했어요. 다시 시도해 주세요.");
+      }
+      document.getElementById("introScreen").removeAttribute("aria-busy");
+      button.textContent = introButtonLabel(introStoryIndex);
+      button.disabled = false;
+      introTransitioning = false;
     }
 
-    function openShopFromIntro() {
-      if (!state || state.phase !== "intro") return;
-      state.story.introSeen = true;
-      showDayOpening();
+    async function openShopFromIntro(button) {
+      if (!state || state.phase !== "intro") return false;
+      const opened = await showDayOpening(button);
+      if (opened) state.story.introSeen = true;
+      return opened;
     }
 
     function dayVillageScene(day) {
       return VILLAGE_STORIES[(Math.max(1, day) - 1) % VILLAGE_STORIES.length];
     }
 
-    async function renderDayStoryBackdrop(scene, expectedDay) {
-      const loaded = await preloadImage(scene.image);
-      if (!loaded || !state || state.day !== expectedDay || state.phase !== "story") return;
+    async function commitDayStoryScene(scene, expectedDay) {
       const nextLayer = dayStoryBackdropLayer === 0 ? 1 : 0;
       const next = document.getElementById(nextLayer === 0 ? "dayStoryBackdropA" : "dayStoryBackdropB");
       const current = document.getElementById(dayStoryBackdropLayer === 0 ? "dayStoryBackdropA" : "dayStoryBackdropB");
       next.style.backgroundImage = `url("${scene.image}")`;
       next.style.backgroundPosition = scene.position;
-      requestAnimationFrame(() => {
-        next.classList.add("active");
-        current.classList.remove("active");
-        dayStoryBackdropLayer = nextLayer;
-      });
-    }
-
-    function showDayOpening() {
-      if (!state) return;
-      ensureStoryState(state);
-      state.phase = "story";
-      state.story.lastPresentedDay = state.day;
-      const scene = dayVillageScene(state.day);
-      document.getElementById("dayStoryKicker").textContent = `☀️ DAY ${state.day}`;
+      await nextFrame();
+      if (!state || state.day !== expectedDay) return false;
+      document.getElementById("dayStoryKicker").textContent = `☀️ DAY ${expectedDay}`;
       document.getElementById("dayStoryContent").innerHTML = `<p>${scene.copy}</p>`;
-      document.getElementById("dayStoryButton").textContent = `DAY ${state.day} 시작하기`;
+      document.getElementById("dayStoryButton").textContent = `DAY ${expectedDay} 시작하기`;
+      next.classList.add("active");
+      current.classList.remove("active");
+      dayStoryBackdropLayer = nextLayer;
       setScreen("storyScreen");
-      renderDayStoryBackdrop(scene, state.day);
-      prepareImages("story");
+      return true;
     }
 
-    function enterDay() {
-      if (!state || state.phase !== "story") return;
+    async function showDayOpening(sourceButton = null) {
+      if (!state || dayTransitioning) return false;
+      dayTransitioning = true;
+      ensureStoryState(state);
+      const expectedDay = state.day;
+      const scene = dayVillageScene(expectedDay);
+      const activeScreen = document.querySelector(".screen.active");
+      activeScreen?.setAttribute("aria-busy", "true");
+      const originalLabel = sourceButton?.textContent;
+      if (sourceButton) sourceButton.disabled = true;
+      const loadingTimer = sourceButton ? showDelayedButtonStatus(sourceButton, "마을 준비 중…") : null;
+      const loaded = await preloadImage(scene.image, "high");
+      if (loadingTimer) clearTimeout(loadingTimer);
+      if (!loaded) {
+        activeScreen?.removeAttribute("aria-busy");
+        if (sourceButton) {
+          sourceButton.textContent = originalLabel;
+          sourceButton.disabled = false;
+        }
+        dayTransitioning = false;
+        showToast("마을 풍경을 불러오지 못했어요. 다시 시도해 주세요.");
+        return false;
+      }
+
+      state.phase = "story";
+      state.story.lastPresentedDay = expectedDay;
+      const committed = await commitDayStoryScene(scene, expectedDay);
+      activeScreen?.removeAttribute("aria-busy");
+      if (sourceButton) {
+        sourceButton.textContent = originalLabel;
+        sourceButton.disabled = false;
+      }
+      dayTransitioning = false;
+      if (committed) prepareImagesInSequence("day");
+      return committed;
+    }
+
+    async function enterDay() {
+      if (!state || state.phase !== "story" || dayTransitioning) return;
+      dayTransitioning = true;
+      const button = document.getElementById("dayStoryButton");
+      const label = button.textContent;
+      button.disabled = true;
+      document.getElementById("storyScreen").setAttribute("aria-busy", "true");
+      const loadingTimer = showDelayedButtonStatus(button, "가게 준비 중…");
+      const loaded = await prepareImages("day", "high");
+      clearTimeout(loadingTimer);
+      if (loaded.some(result => !result)) {
+        document.getElementById("storyScreen").removeAttribute("aria-busy");
+        button.textContent = label;
+        button.disabled = false;
+        dayTransitioning = false;
+        showToast("가게 이미지를 불러오지 못했어요. 다시 시도해 주세요.");
+        return;
+      }
+
       state.phase = "day";
       state.selectedOrderId = null;
       renderDay();
       setScreen("dayScreen");
+      document.getElementById("storyScreen").removeAttribute("aria-busy");
+      button.textContent = label;
+      button.disabled = false;
+      dayTransitioning = false;
       showToast(`DAY ${state.day}! 오늘의 주문을 준비해 주세요 🐾`);
+      const preloadNight = () => prepareImagesInSequence("night");
+      if ("requestIdleCallback" in window) requestIdleCallback(preloadNight, { timeout: 2500 });
+      else setTimeout(preloadNight, 500);
     }
 
     function setDayPane(pane) {
@@ -2029,9 +2173,24 @@
       }
     });
 
+    async function prepareInitialScreen() {
+      const startScreen = document.getElementById("startScreen");
+      startScreen.setAttribute("aria-busy", "true");
+      preloadImage(INTRO_STORY[0].image, "high");
+      const criticalImages = Promise.all([
+        preloadImage("assets/mascot-stretch-v26.webp", "high"),
+        preloadImage("assets/petshop-day-v06.webp", "high")
+      ]);
+      const safetyTimeout = new Promise(resolve => setTimeout(resolve, 3000));
+      await Promise.race([criticalImages, safetyTimeout]);
+      await nextFrame();
+      document.body.classList.remove("app-booting");
+      startScreen.removeAttribute("aria-busy");
+    }
+
     state = freshState();
-    prepareImages("day");
     refreshStartScreen();
+    prepareInitialScreen();
   </script>
   <div id="soundControl" class="sound-toggle">
     <div id="volumePanel" hidden style="position:absolute;right:0;bottom:calc(100% + 10px);padding:12px;background:#fff3de;border:2px solid #ba936b;border-radius:14px;white-space:nowrap;box-shadow:0 3px 10px #34253d40">
